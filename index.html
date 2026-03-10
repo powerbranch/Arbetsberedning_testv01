@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Arbetsberedning – NCC Field</title>
+  <script src="https://cdn.jsdelivr.net/npm/streambim-widget-api@3/dist/streambim-widget-api.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #141414;
+      --surface:  #1e1e1e;
+      --surface2: #262626;
+      --surface3: #2e2e2e;
+      --border:   #333;
+      --border2:  #444;
+      --text:     #f0f0f0;
+      --muted:    #888;
+      --muted2:   #555;
+      --yellow:   #f5c800;
+      --yellow-h: #e0b500;
+      --green:    #3cb87a;
+      --blue:     #4a9eff;
+      --red:      #e04040;
+      --radius:   8px;
+    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.5; }
+    #app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* ── Header ── */
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; height: 48px; gap: 8px; }
+    .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .ncc-badge { background: var(--yellow); color: #000; font-weight: 800; font-size: 11px; padding: 2px 7px; border-radius: 4px; letter-spacing: .3px; flex-shrink: 0; }
+    .header-title { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conn-pill { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 100px; flex-shrink: 0; }
+    .conn-pill.live { color: var(--green); border-color: #2a6648; }
+    .cdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .cdot.pulse { animation: blink 1.4s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+    /* ── Step bar ── */
+    .steps-bar { display: flex; align-items: center; padding: 10px 16px 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; scrollbar-width: none; }
+    .steps-bar::-webkit-scrollbar { display: none; }
+    .step-item { display: flex; align-items: center; flex-shrink: 0; }
+    .step-num { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--muted); background: var(--surface2); transition: all .2s; flex-shrink: 0; }
+    .step-label { font-size: 10px; font-weight: 500; color: var(--muted); margin-left: 5px; white-space: nowrap; transition: color .2s; }
+    .step-connector { width: 16px; height: 1px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+    .step-item.active .step-num { border-color: var(--yellow); background: var(--yellow); color: #000; }
+    .step-item.active .step-label { color: var(--yellow); }
+    .step-item.done .step-num { border-color: var(--green); background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }
+    .step-item.done .step-label { color: var(--green); }
+
+    /* ── Body ── */
+    .body { flex: 1; overflow-y: auto; padding: 16px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+    .body::-webkit-scrollbar { width: 4px; }
+    .body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+    .step-heading { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .step-sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; line-height: 1.5; }
+
+    /* ── Form ── */
+    .field-label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
+    .field { margin-bottom: 14px; }
+    input[type="text"], textarea, select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: inherit; font-size: 13px; padding: 9px 12px; outline: none; transition: border-color .15s; resize: vertical; }
+    input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--yellow); }
+    textarea { min-height: 68px; }
+    select option { background: #222; }
+
+    /* ── Notes ── */
+    .info-note { display: flex; align-items: flex-start; gap: 7px; background: color-mix(in srgb, var(--yellow) 8%, transparent); border: 1px solid color-mix(in srgb, var(--yellow) 25%, transparent); border-radius: var(--radius); padding: 8px 10px; font-size: 11px; color: var(--yellow); margin-bottom: 14px; }
+    .success-note { display: flex; align-items: flex-start; gap: 7px; background: color-mix(in srgb, var(--green) 10%, transparent); border: 1px solid color-mix(in srgb, var(--green) 30%, transparent); border-radius: var(--radius); padding: 8px 10px; font-size: 11px; color: var(--green); margin-bottom: 14px; }
+
+    /* ── Section divider ── */
+    .section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 16px 0 8px; display: flex; align-items: center; gap: 8px; }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Object banner ── */
+    .object-banner { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--yellow); border-radius: var(--radius); padding: 9px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .object-banner-icon { font-size: 16px; }
+    .object-banner-info { flex: 1; min-width: 0; }
+    .object-banner-title { font-size: 11px; font-weight: 600; }
+    .object-banner-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+    .highlight-btn { background: none; border: 1px solid var(--border2); border-radius: 6px; color: var(--blue); font-size: 10px; font-family: inherit; padding: 4px 8px; cursor: pointer; white-space: nowrap; transition: border-color .15s; }
+    .highlight-btn:hover { border-color: var(--blue); }
+
+    /* ── API-action row (steg 1 buttons) ── */
+    .action-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .api-btn { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; color: var(--text); font-family: inherit; font-size: 11px; font-weight: 600; padding: 7px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: border-color .15s, background .15s; white-space: nowrap; }
+    .api-btn:hover { border-color: var(--yellow); }
+    .api-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .api-btn.loading { opacity: .6; cursor: wait; }
+    .api-btn.done { border-color: var(--green); color: var(--green); }
+    .api-btn.error { border-color: var(--red); color: var(--red); }
+
+    /* ── Screenshot preview ── */
+    .screenshot-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
+    .screenshot-box img { width: 100%; display: block; max-height: 160px; object-fit: cover; }
+    .screenshot-box-label { padding: 6px 10px; font-size: 10px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
+
+    /* ── Floorplan preview ── */
+    .floorplan-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
+    .floorplan-box img { width: 100%; display: block; max-height: 200px; object-fit: contain; background: #111; }
+    .floorplan-box-label { padding: 6px 10px; font-size: 10px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
+
+    /* ── Person cards ── */
+    .person-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .person-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 11px; display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; transition: border-color .15s; }
+    .person-card.editing { border-color: var(--yellow); }
+    .person-view { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .person-edit { display: none; flex-direction: column; gap: 5px; flex: 1; }
+    .person-card.editing .person-view { display: none; }
+    .person-card.editing .person-edit { display: flex; }
+    .person-name { font-weight: 600; font-size: 12px; }
+    .person-role { font-size: 10px; color: var(--muted); }
+    .p-input { background: var(--surface3); border: 1px solid var(--border2); border-radius: 5px; color: var(--text); font-family: inherit; font-size: 11px; padding: 4px 7px; outline: none; width: 100%; }
+    .p-input:focus { border-color: var(--yellow); }
+    .card-btns { display: flex; gap: 2px; flex-shrink: 0; }
+    .icon-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 12px; padding: 3px 5px; border-radius: 4px; line-height: 1; transition: color .15s; }
+    .icon-btn:hover { color: var(--text); }
+    .icon-btn.ok { color: var(--green); }
+    .icon-btn.ok:hover { color: #2da868; }
+    .icon-btn.del:hover { color: var(--red); }
+
+    /* ── Documents ── */
+    .doc-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .doc-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+    .doc-icon { font-size: 14px; flex-shrink: 0; }
+    .doc-name-input { background: transparent; border: none; color: var(--text); font-family: inherit; font-size: 12px; flex: 1; outline: none; padding: 0; }
+    .doc-name-input:focus { border-bottom: 1px solid var(--yellow); }
+    .add-dashed-btn { background: none; border: 1px dashed var(--border2); border-radius: var(--radius); color: var(--muted); font-size: 12px; font-family: inherit; padding: 7px 12px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; transition: border-color .15s, color .15s; margin-bottom: 14px; }
+    .add-dashed-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+
+    /* ── Risk table ── */
+    .risk-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 12px; }
+    .risk-table th { text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--yellow); padding: 0 6px 8px; border-bottom: 1px solid var(--border); }
+    .risk-table td { padding: 5px 4px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .risk-table tr:last-child td { border-bottom: none; }
+    .risk-input { background: transparent; border: none; border-bottom: 1px solid transparent; color: var(--text); font-family: inherit; font-size: 12px; padding: 2px 4px; width: 100%; outline: none; transition: border-color .15s; }
+    .risk-input:focus { border-bottom-color: var(--yellow); }
+    .risk-input::placeholder { color: var(--muted2); }
+    .del-btn { background: none; border: none; color: var(--muted2); cursor: pointer; font-size: 13px; padding: 2px 4px; transition: color .15s; line-height: 1; }
+    .del-btn:hover { color: var(--red); }
+    .add-small-btn { background: none; border: 1px dashed var(--border2); border-radius: 6px; color: var(--muted); font-size: 11px; font-family: inherit; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: border-color .15s, color .15s; margin-bottom: 14px; width: 100%; }
+    .add-small-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+
+    /* Topic-knapp i risktabell */
+    .topic-btn { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); font-family: inherit; font-size: 10px; padding: 2px 6px; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s; }
+    .topic-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .topic-btn.sent { border-color: var(--green); color: var(--green); cursor: default; }
+    .topic-btn.err  { border-color: var(--red);   color: var(--red);   }
+
+    /* ── Resource cards ── */
+    .resource-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .resource-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 12px; }
+    .resource-title { display: flex; align-items: center; gap: 7px; font-weight: 700; font-size: 12px; margin-bottom: 10px; }
+    .resource-icon { font-size: 15px; }
+    .res-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 11px; padding: 4px 2px; width: 100%; outline: none; margin-bottom: 5px; transition: border-color .15s; }
+    .res-input:last-child { margin-bottom: 0; border-bottom: none; }
+    .res-input:focus { border-bottom-color: var(--yellow); }
+    .res-input.muted { color: var(--muted); }
+    .res-input.link { color: var(--blue); }
+    .res-input::placeholder { color: var(--muted2); }
+
+    /* ── Sign table ── */
+    .sign-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 10px; }
+    .sign-table th { text-align: left; padding: 0 8px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .sign-table td { padding: 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .sign-table tr:last-child td { border-bottom: none; }
+    .sign-input { background: transparent; border: none; border-bottom: 1px solid transparent; color: var(--text); font-family: inherit; font-size: 12px; padding: 2px 3px; width: 100%; outline: none; transition: border-color .15s; }
+    .sign-input:focus { border-bottom-color: var(--yellow); }
+    .sign-btn { background: color-mix(in srgb, var(--yellow) 12%, transparent); border: 1px solid color-mix(in srgb, var(--yellow) 35%, transparent); border-radius: 6px; color: var(--yellow); font-size: 11px; font-weight: 600; font-family: inherit; padding: 5px 12px; cursor: pointer; transition: background .15s; white-space: nowrap; }
+    .sign-btn:hover { background: color-mix(in srgb, var(--yellow) 22%, transparent); }
+    .sign-btn.signed { background: color-mix(in srgb, var(--green) 12%, transparent); border-color: color-mix(in srgb, var(--green) 35%, transparent); color: var(--green); cursor: default; }
+
+    /* ── Checkbox ── */
+    .checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--yellow); flex-shrink: 0; margin-top: 1px; cursor: pointer; }
+    .checkbox-label { font-size: 12px; color: var(--muted); cursor: pointer; }
+
+    /* ── Footer ── */
+    .footer { padding: 10px 16px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; display: flex; gap: 8px; }
+    .btn-back { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: inherit; font-size: 12px; font-weight: 600; padding: 9px 16px; cursor: pointer; transition: background .15s; flex-shrink: 0; }
+    .btn-back:hover { background: var(--surface3); }
+    .btn-primary { flex: 1; background: var(--yellow); border: none; border-radius: var(--radius); color: #000; font-family: inherit; font-size: 13px; font-weight: 700; padding: 10px 16px; cursor: pointer; transition: background .15s; }
+    .btn-primary:hover { background: var(--yellow-h); }
+
+    /* ── Toast ── */
+    #toast { position: fixed; bottom: 64px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 6px 14px; border-radius: 8px; font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; white-space: nowrap; z-index: 99; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Spinner ── */
+    .spin { display: inline-block; width: 10px; height: 10px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Bekräftelse-overlay (skärmbild) ── */
+    #screenshotOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 12px; }
+    #screenshotOverlay.active { display: flex; }
+    .overlay-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 20px; max-width: 340px; width: 100%; text-align: center; }
+    .overlay-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .overlay-sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+    .overlay-btns { display: flex; gap: 8px; }
+    .overlay-cancel { flex: 1; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: inherit; font-size: 12px; font-weight: 600; padding: 9px; cursor: pointer; }
+    .overlay-confirm { flex: 1; background: var(--yellow); border: none; border-radius: var(--radius); color: #000; font-family: inherit; font-size: 12px; font-weight: 700; padding: 9px; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="ncc-badge">NCC</div>
+      <div class="header-title">Arbetsberedning</div>
+    </div>
+    <div id="connBadge" class="conn-pill">
+      <div class="cdot pulse"></div><span>Ansluter…</span>
+    </div>
+  </div>
+
+  <div class="steps-bar" id="stepsBar"></div>
+
+  <div class="body" id="body">
+
+    <!-- ══ STEG 1 ══ -->
+    <div class="step-panel" id="step-1">
+      <div class="step-heading">Steg 1 – Aktivera arbetsberedning</div>
+      <div class="step-sub">Markera ett objekt i modellen eller starta fristående.</div>
+
+      <!-- Objekt-banner -->
+      <div id="objectBanner" class="object-banner" style="display:none">
+        <div class="object-banner-icon">🧱</div>
+        <div class="object-banner-info">
+          <div class="object-banner-title" id="objectBannerTitle">Valt objekt</div>
+          <div class="object-banner-sub" id="objectBannerSub">—</div>
+        </div>
+        <button class="highlight-btn" onclick="highlightSelected()">Visa i modell</button>
+      </div>
+
+      <div id="noObjectNote" class="info-note">
+        <span>ℹ️</span>
+        <span>Inget objekt markerat – fyll i manuellt eller klicka på ett objekt i modellen.</span>
+      </div>
+
+      <!-- API-knappar: Skärmbild + Planritning (syns bara när objekt är valt) -->
+      <div class="action-row" id="apiActionRow" style="display:none">
+        <button class="api-btn" id="btnScreenshot" onclick="startScreenshotFlow()">
+          📷 Välj vy &amp; ta skärmbild
+        </button>
+        <button class="api-btn" id="btnFloorplan" onclick="captureFloorplan()">
+          🗺️ Hämta planritning
+        </button>
+      </div>
+
+      <!-- Skärmbild preview -->
+      <div id="screenshotPreview" class="screenshot-box" style="display:none">
+        <img id="screenshotImg" src="" alt="Skärmbild"/>
+        <div class="screenshot-box-label">
+          <span>📷 Modellvy bifogad</span>
+          <button class="del-btn" onclick="clearScreenshot()" title="Ta bort">✕ Ta bort</button>
+        </div>
+      </div>
+
+      <!-- Planritning preview -->
+      <div id="floorplanPreview" class="floorplan-box" style="display:none">
+        <img id="floorplanImg" src="" alt="Planritning"/>
+        <div class="floorplan-box-label">
+          <span>🗺️ Planritning med markering bifogad</span>
+          <button class="del-btn" onclick="clearFloorplan()" title="Ta bort">✕ Ta bort</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Typ av arbetsberedning</label>
+        <select id="ab-type">
+          <option value="">Välj typ…</option>
+          <option value="fogning">Fogning / tätning</option>
+          <option value="betong">Betongarbeten</option>
+          <option value="stalskelett">Stålskelett</option>
+          <option value="fasad">Fasadarbeten</option>
+          <option value="el">El-installation</option>
+          <option value="vvs">VVS-arbeten</option>
+          <option value="annan">Annan</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Projektnamn</label>
+        <input type="text" id="ab-project" placeholder="Hämtas från StreamBIM…" value="Projekt Skogsvägen"/>
+      </div>
+      <div class="field">
+        <label class="field-label">Plats / zon</label>
+        <input type="text" id="ab-zone" placeholder="t.ex. B-vinge vån 2, fack B204–B210"/>
+      </div>
+    </div>
+
+    <!-- ══ STEG 2 ══ -->
+    <div class="step-panel" id="step-2">
+      <div class="step-heading">Steg 2 – Grunddata</div>
+      <div class="step-sub">Fyll i arbetsmoment, omfattning, tidplanekod och ansvariga.</div>
+
+      <div class="field">
+        <label class="field-label">Arbetsmoment</label>
+        <input type="text" id="ab-moment" placeholder="t.ex. Fogning / tätning"/>
+      </div>
+      <div class="field">
+        <label class="field-label">Omfattning / beskrivning</label>
+        <textarea id="ab-scope" placeholder="t.ex. Väggar i fasadstråk mot skolgård, fack B204–B210"></textarea>
+      </div>
+      <div class="info-note">
+        <span>⚠️</span>
+        <span>Tidplanekod skrivs in manuellt i MVP. Automatisk hämtning från Yolean i fullversion.</span>
+      </div>
+      <div class="field">
+        <label class="field-label">Tidplanekod / aktivitet</label>
+        <input type="text" id="ab-tpkod" placeholder="t.ex. 571 Fogning/tätning"/>
+      </div>
+
+      <div class="section-label">Projekt &amp; ansvariga</div>
+      <div class="person-grid" id="personGrid"></div>
+      <button class="add-dashed-btn" onclick="addPerson()">+ Lägg till person</button>
+    </div>
+
+    <!-- ══ STEG 3 ══ -->
+    <div class="step-panel" id="step-3">
+      <div class="step-heading">Steg 3 – Arbetsmoment &amp; handlingar</div>
+      <div class="step-sub">Beskriv själva arbetsmomentet och bifoga relevanta handlingar.</div>
+
+      <div class="field">
+        <label class="field-label">Arbetsmoment / aktivitet</label>
+        <textarea id="ab-aktivitet" placeholder="Beskriv vad som ska utföras…"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">Kommentarer / instruktioner</label>
+        <textarea id="ab-kommentar" placeholder="Särskild uppmärksamhet, speciella krav…"></textarea>
+      </div>
+
+      <div class="section-label">Handlingar / referenser</div>
+      <div class="doc-list" id="docList"></div>
+      <button class="add-dashed-btn" onclick="addDoc()">+ Lägg till handling</button>
+
+      <div class="field">
+        <label class="field-label">Exempel / länkar</label>
+        <input type="text" id="ab-link" placeholder="Länk till mall eller tidigare arbetsberedning"/>
+      </div>
+    </div>
+
+    <!-- ══ STEG 4 ══ -->
+    <div class="step-panel" id="step-4">
+      <div class="step-heading">Steg 4 – Risker &amp; åtgärder</div>
+      <div class="step-sub">Föreslagna risker baseras på AFS 2023:13. Granska, ange ansvarig och skapa topics vid behov.</div>
+
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th style="width:30%">Risk</th>
+            <th style="width:33%">Åtgärd</th>
+            <th style="width:17%">Ansvarig</th>
+            <th style="width:13%">Topic</th>
+            <th style="width:7%"></th>
+          </tr>
+        </thead>
+        <tbody id="riskBody"></tbody>
+      </table>
+      <button class="add-small-btn" onclick="addRisk()">+ Lägg till risk</button>
+
+      <div class="info-note">
+        <span>ℹ️</span>
+        <span>Klicka "📌 Topic" för att skapa en avvikelse/topic i StreamBIM direkt kopplad till objektet.</span>
+      </div>
+    </div>
+
+    <!-- ══ STEG 5 ══ -->
+    <div class="step-panel" id="step-5">
+      <div class="step-heading">Steg 5 – Resurser, material &amp; maskiner</div>
+      <div class="step-sub">Ange resurser, maskiner, material och tidsaspekter för momentet.</div>
+      <div class="resource-grid">
+        <div class="resource-card">
+          <div class="resource-title"><span class="resource-icon">🔧</span>Maskiner &amp; utrustning</div>
+          <input class="res-input" type="text" placeholder="Verktyg och maskiner…" value="Fogpistol, ställning, arbetsplattform"/>
+          <input class="res-input muted" type="text" placeholder="Kommentar…" value="Verktyg kontrollerade"/>
+        </div>
+        <div class="resource-card">
+          <div class="resource-title"><span class="resource-icon">⏱️</span>Tid &amp; ekonomi</div>
+          <input class="res-input" type="text" placeholder="Estimerad tid…" value="8 timmar – 2 byggare"/>
+          <input class="res-input muted" type="text" placeholder="Kostnad…" value="Kostnad enligt kalkyl"/>
+          <input class="res-input muted" type="text" placeholder="Aktivitetskod…" value="Aktivitet 571 Fogning/tätning"/>
+        </div>
+        <div class="resource-card">
+          <div class="resource-title"><span class="resource-icon">📦</span>Material</div>
+          <input class="res-input" type="text" placeholder="Material…" value="Silikonfogmassa, primer"/>
+          <input class="res-input muted" type="text" placeholder="Leveranspunkt…" value="B-vinge vån 2 (B204–B210)"/>
+          <input class="res-input muted" type="text" placeholder="Avfallshantering…" value="Spill → kemavfall"/>
+        </div>
+        <div class="resource-card">
+          <div class="resource-title"><span class="resource-icon">🌿</span>Kvalitet &amp; miljö</div>
+          <input class="res-input" type="text" placeholder="Egenkontroll…" value="Egenkontroll fogbredd/vidfästning"/>
+          <input class="res-input link" type="text" placeholder="Länk till checklista…" value="Checklista egenkontroll fogning"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STEG 6 ══ -->
+    <div class="step-panel" id="step-6">
+      <div class="step-heading">Steg 6 – Kvittens &amp; export</div>
+      <div class="step-sub">Samtliga signerare måste gå igenom arbetsberedningen innan PDF-export.</div>
+
+      <!-- Bilagor-sammanfattning -->
+      <div id="attachmentSummary"></div>
+
+      <table class="sign-table">
+        <thead><tr><th>Namn</th><th>Roll</th><th>Signering</th><th></th></tr></thead>
+        <tbody id="signBody"></tbody>
+      </table>
+      <button class="add-dashed-btn" onclick="addSigner()">+ Lägg till signerare</button>
+
+      <div class="field" style="margin-top:14px">
+        <label class="field-label">Kommentar</label>
+        <input type="text" id="ab-signkomment" placeholder="t.ex. Genomgång klar 2025-11-07"/>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="ab-confirm"/>
+        <label for="ab-confirm" class="checkbox-label">Jag har tagit del av och förstått arbetsberedningen.</label>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">
+    <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none">← Tillbaka</button>
+    <button class="btn-primary" id="btnNext" onclick="nextStep()">Bekräfta och fortsätt →</button>
+  </div>
+</div>
+
+<!-- Skärmbild-overlay -->
+<div id="screenshotOverlay">
+  <div class="overlay-card">
+    <div class="overlay-title">📷 Välj vy i modellen</div>
+    <div class="overlay-sub">Ställ in önskad kameravy i StreamBIM-modellen, klicka sedan "Ta skärmbild nu" när du är redo.</div>
+    <div class="overlay-btns">
+      <button class="overlay-cancel" onclick="cancelScreenshot()">Avbryt</button>
+      <button class="overlay-confirm" onclick="confirmScreenshot()">Ta skärmbild nu</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════ */
+let API            = null;
+let selectedGuid   = null;
+let cameraPosition = null;   // sparas vid objektpick för planritning
+let screenshotDataUrl = null;
+let floorplanDataUrl  = null;
+let projectId      = null;
+
+/* ══════════════════════════════════════════════════════
+   STREAMBIM-ANSLUTNING
+══════════════════════════════════════════════════════ */
+function setDemoMode() {
+  const b = document.getElementById('connBadge');
+  b.innerHTML = '<div class="cdot"></div><span>Demo-läge</span>';
+}
+
+try {
+  StreamBIM.connectToParent(window, {
+    pickedObject(r) { if (r?.guid) { selectedGuid = r.guid; onObjectPicked(r.guid); } },
+    cameraChanged(state) { if (state?.position) cameraPosition = state.position; }
+  }).then(() => {
+    API = StreamBIM.API;
+    const b = document.getElementById('connBadge');
+    b.className = 'conn-pill live';
+    b.innerHTML = '<div class="cdot"></div><span>Ansluten</span>';
+    API.getProjectId().then(id => {
+      projectId = id;
+      const el = document.getElementById('ab-project');
+      if (el && id) el.value = 'Projekt ' + id;
+    }).catch(() => {});
+    // Hämta initial kameraposition
+    API.getCameraState().then(s => { if (s?.position) cameraPosition = s.position; }).catch(()=>{});
+  }).catch(setDemoMode);
+} catch(e) { setDemoMode(); }
+
+async function onObjectPicked(guid) {
+  document.getElementById('objectBannerSub').textContent = 'GUID: ' + guid.substring(0, 20) + '…';
+  document.getElementById('objectBanner').style.display = 'flex';
+  document.getElementById('noObjectNote').style.display = 'none';
+  document.getElementById('apiActionRow').style.display = 'flex';
+
+  let name = 'IFC-objekt';
+  if (API) {
+    try {
+      const info = await API.getObjectInfo(guid);
+      if (info?.name) name = info.name;
+    } catch(e) {}
+    // Uppdatera kameraposition
+    try { const s = await API.getCameraState(); if (s?.position) cameraPosition = s.position; } catch(e) {}
+  } else {
+    name = 'Fasadvägg B-vinge';
+  }
+  document.getElementById('objectBannerTitle').textContent = name;
+  const z = document.getElementById('ab-zone');
+  if (z && !z.value) z.value = name;
+  toast('Objekt markerat – ' + name);
+}
+
+async function highlightSelected() {
+  if (!API || !selectedGuid) { toast('Inget objekt valt'); return; }
+  try {
+    await API.deHighlightAllObjects();
+    await API.highlightObject(selectedGuid);
+    await API.gotoObject(selectedGuid);
+  } catch(e) { toast('Kunde inte visa objekt'); }
+}
+
+/* ══════════════════════════════════════════════════════
+   📷 SKÄRMBILD
+══════════════════════════════════════════════════════ */
+function startScreenshotFlow() {
+  // Visa overlay – användaren ställer in vy och klickar bekräfta
+  document.getElementById('screenshotOverlay').classList.add('active');
+}
+
+function cancelScreenshot() {
+  document.getElementById('screenshotOverlay').classList.remove('active');
+}
+
+async function confirmScreenshot() {
+  document.getElementById('screenshotOverlay').classList.remove('active');
+  const btn = document.getElementById('btnScreenshot');
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="spin"></span> Tar skärmbild…';
+
+  try {
+    let dataUrl;
+    if (API) {
+      dataUrl = await API.takeScreenshot();
+    } else {
+      // Demo: generera en grå placeholder
+      dataUrl = await makeDemoScreenshot();
+    }
+    screenshotDataUrl = dataUrl;
+    document.getElementById('screenshotImg').src = dataUrl;
+    document.getElementById('screenshotPreview').style.display = 'block';
+    btn.classList.remove('loading');
+    btn.classList.add('done');
+    btn.innerHTML = '✓ Skärmbild tagen';
+    toast('Skärmbild bifogad ✓');
+    updateAttachmentSummary();
+  } catch(e) {
+    btn.classList.remove('loading');
+    btn.classList.add('error');
+    btn.innerHTML = '✕ Misslyckades';
+    toast('Kunde inte ta skärmbild: ' + (e?.message || e));
+    setTimeout(() => { btn.classList.remove('error'); btn.innerHTML = '📷 Välj vy &amp; ta skärmbild'; }, 3000);
+  }
+}
+
+function clearScreenshot() {
+  screenshotDataUrl = null;
+  document.getElementById('screenshotPreview').style.display = 'none';
+  const btn = document.getElementById('btnScreenshot');
+  btn.classList.remove('done','error');
+  btn.innerHTML = '📷 Välj vy &amp; ta skärmbild';
+  updateAttachmentSummary();
+}
+
+// Demo-placeholder: canvas → dataURL
+function makeDemoScreenshot() {
+  return new Promise(resolve => {
+    const c = document.createElement('canvas');
+    c.width = 400; c.height = 200;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#1a2233';
+    ctx.fillRect(0, 0, 400, 200);
+    ctx.fillStyle = '#f5c800';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Demo-skärmbild (ingen modell ansluten)', 200, 100);
+    resolve(c.toDataURL('image/png'));
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   🗺️ PLANRITNING
+══════════════════════════════════════════════════════ */
+async function captureFloorplan() {
+  const btn = document.getElementById('btnFloorplan');
+  if (!selectedGuid && !cameraPosition) {
+    toast('Markera ett objekt först');
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="spin"></span> Hämtar planritning…';
+
+  try {
+    let dataUrl;
+    if (API && cameraPosition) {
+      // getAnnotatedFloorplan tar kameraposition och ritar en markering
+      dataUrl = await API.getAnnotatedFloorplan(cameraPosition);
+    } else {
+      dataUrl = await makeDemoFloorplan();
+    }
+    floorplanDataUrl = dataUrl;
+    document.getElementById('floorplanImg').src = dataUrl;
+    document.getElementById('floorplanPreview').style.display = 'block';
+    btn.classList.remove('loading');
+    btn.classList.add('done');
+    btn.innerHTML = '✓ Planritning hämtad';
+    toast('Planritning med markering bifogad ✓');
+    updateAttachmentSummary();
+  } catch(e) {
+    btn.classList.remove('loading');
+    btn.classList.add('error');
+    btn.innerHTML = '✕ Misslyckades';
+    toast('Kunde inte hämta planritning: ' + (e?.message || e));
+    setTimeout(() => { btn.classList.remove('error'); btn.innerHTML = '🗺️ Hämta planritning'; }, 3000);
+  }
+}
+
+function clearFloorplan() {
+  floorplanDataUrl = null;
+  document.getElementById('floorplanPreview').style.display = 'none';
+  const btn = document.getElementById('btnFloorplan');
+  btn.classList.remove('done','error');
+  btn.innerHTML = '🗺️ Hämta planritning';
+  updateAttachmentSummary();
+}
+
+function makeDemoFloorplan() {
+  return new Promise(resolve => {
+    const c = document.createElement('canvas');
+    c.width = 400; c.height = 300;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0,0,400,300);
+    // Enkelt planritningsimulat
+    ctx.strokeStyle = '#3a5a9a';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(50,50,300,200);
+    ctx.strokeRect(50,50,150,100);
+    ctx.strokeRect(200,50,150,100);
+    ctx.strokeRect(50,150,300,100);
+    // Markering
+    ctx.fillStyle = 'rgba(245,200,0,0.8)';
+    ctx.beginPath(); ctx.arc(200, 180, 10, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#f5c800';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('📍 Valt objekt', 200, 240);
+    ctx.fillStyle = '#888';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('Demo-planritning', 200, 20);
+    resolve(c.toDataURL('image/png'));
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   📌 TOPICS (BCF via makeApiRequest)
+══════════════════════════════════════════════════════ */
+// StreamBIM exponerar BCF-topics via pgw REST API.
+// Endpoint-mönster baserat på widget API-dokumentation:
+//   POST /pgw/project-{id}/bcf/2.1/projects/{id}/topics
+// Vi försöker med känt mönster och fångar fel transparent.
+
+async function createTopic(riskIndex, btn) {
+  const r = risks[riskIndex];
+  if (!r.risk) { toast('Fyll i riskbeskrivning först'); return; }
+
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="spin"></span>';
+  btn.disabled = true;
+
+  const title = `[AB] ${r.risk}`;
+  const description = [
+    `Risk: ${r.risk}`,
+    `Åtgärd: ${r.atgard || '—'}`,
+    `Ansvarig: ${r.ansvarig || '—'}`,
+    selectedGuid ? `Objekt GUID: ${selectedGuid}` : '',
+    `Projekt: ${document.getElementById('ab-project').value || '—'}`,
+    `Plats: ${document.getElementById('ab-zone').value || '—'}`,
+  ].filter(Boolean).join('\n');
+
+  // Försök 1: pgw REST API (StreamBIMs interna mönster)
+  const pid = projectId || 'DEMO';
+  const body = {
+    topic_type: 'Issue',
+    topic_status: 'Open',
+    title,
+    description,
+    labels: ['Arbetsberedning', 'Risk'],
+  };
+
+  // Lägg till IFC-komponent om vi har ett GUID
+  if (selectedGuid) {
+    body.viewpoint = {
+      components: {
+        selection: [{ ifc_guid: selectedGuid }]
+      }
+    };
+  }
+
+  let success = false;
+  let topicGuid = null;
+
+  if (API && pid !== 'DEMO') {
+    // Försök med BCF 2.1-endpoint via makeApiRequest
+    const bcfUrl = `/pgw/project-${pid}/bcf/2.1/projects/${pid}/topics`;
+    try {
+      const raw = await API.makeApiRequest({
+        url: bcfUrl,
+        method: 'POST',
+        body,
+        contentType: 'application/json',
+        accept: 'application/json',
+      });
+      const resp = JSON.parse(raw);
+      topicGuid = resp.guid || resp.id || '(skapad)';
+      success = true;
+    } catch(e1) {
+      // Försök 2: alternativt URL-mönster
+      const altUrl = `/pgw/project-${pid}/api/v1/topics`;
+      try {
+        const raw2 = await API.makeApiRequest({
+          url: altUrl,
+          method: 'POST',
+          body: { title, description, type: 'Issue', status: 'Open' },
+          contentType: 'application/json',
+          accept: 'application/json',
+        });
+        const resp2 = JSON.parse(raw2);
+        topicGuid = resp2.guid || resp2.id || '(skapad)';
+        success = true;
+      } catch(e2) {
+        // Logga för felsökning
+        console.warn('[AB] BCF topic endpoint svarade ej:', e1, e2);
+      }
+    }
+  }
+
+  btn.disabled = false;
+  if (success) {
+    risks[riskIndex].topicGuid = topicGuid;
+    btn.classList.remove('loading');
+    btn.classList.add('sent');
+    btn.innerHTML = '✓ Skapat';
+    btn.title = 'Topic GUID: ' + topicGuid;
+    toast('Topic skapat i StreamBIM ✓');
+  } else if (!API || pid === 'DEMO') {
+    // Demo-läge: simulera framgång
+    risks[riskIndex].topicGuid = 'DEMO-' + Date.now();
+    btn.classList.remove('loading');
+    btn.classList.add('sent');
+    btn.innerHTML = '✓ Demo';
+    btn.title = 'Demo-läge: topic simulerat';
+    toast('Demo: topic simulerat (ingen modell ansluten)');
+  } else {
+    btn.classList.remove('loading');
+    btn.classList.add('err');
+    btn.innerHTML = '✕ Fel';
+    btn.title = 'Kunde inte nå topics-endpoint. Kontakta support@rendra.io för att bekräfta API-URL.';
+    toast('⚠️ Topic endpoint ej nåbar – se konsolen');
+    setTimeout(() => {
+      btn.classList.remove('err');
+      btn.innerHTML = '📌 Topic';
+      btn.title = '';
+    }, 4000);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   BILAGE-SAMMANFATTNING (steg 6)
+══════════════════════════════════════════════════════ */
+function updateAttachmentSummary() {
+  const box = document.getElementById('attachmentSummary');
+  const items = [];
+  if (screenshotDataUrl) items.push('📷 Modellvy (skärmbild)');
+  if (floorplanDataUrl)  items.push('🗺️ Planritning med markering');
+  const topicCount = risks.filter(r => r.topicGuid).length;
+  if (topicCount > 0)    items.push(`📌 ${topicCount} topic(s) skapade i StreamBIM`);
+
+  if (items.length === 0) {
+    box.innerHTML = '';
+    return;
+  }
+  box.innerHTML = `
+    <div class="success-note" style="flex-direction:column;gap:4px">
+      <div style="font-weight:700;margin-bottom:2px">📎 Bilagor &amp; kopplingar</div>
+      ${items.map(i => `<div>✓ ${i}</div>`).join('')}
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   PERSONS (steg 2)
+══════════════════════════════════════════════════════ */
+let persons = [
+  { name: 'Anders Svensson', role: 'Byggsamordnare' },
+  { name: 'Arvid Byggare',   role: 'Deltagare' },
+];
+
+function renderPersons() {
+  const grid = document.getElementById('personGrid');
+  grid.innerHTML = '';
+  persons.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'person-card';
+    card.id = 'pc' + i;
+    card.innerHTML = `
+      <div class="person-view">
+        <div class="person-name">${escHtml(p.name)}</div>
+        <div class="person-role">${escHtml(p.role)}</div>
+      </div>
+      <div class="person-edit">
+        <input class="p-input" id="pn${i}" type="text" value="${escHtml(p.name)}" placeholder="Namn…"/>
+        <input class="p-input" id="pr${i}" type="text" value="${escHtml(p.role)}" placeholder="Roll…"/>
+      </div>
+      <div class="card-btns">
+        <button class="icon-btn" id="peb${i}" onclick="editPerson(${i})" title="Redigera">✏️</button>
+        <button class="icon-btn ok" id="psb${i}" onclick="savePerson(${i})" title="Spara" style="display:none">✓</button>
+        <button class="icon-btn del" onclick="removePerson(${i})" title="Ta bort">✕</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+function editPerson(i) {
+  document.getElementById('pc'+i).classList.add('editing');
+  document.getElementById('peb'+i).style.display = 'none';
+  document.getElementById('psb'+i).style.display = 'inline-block';
+  document.getElementById('pn'+i).focus();
+}
+function savePerson(i) {
+  persons[i].name = document.getElementById('pn'+i).value || persons[i].name;
+  persons[i].role = document.getElementById('pr'+i).value || persons[i].role;
+  renderPersons(); toast('Sparat');
+}
+function removePerson(i) { persons.splice(i,1); renderPersons(); }
+function addPerson() {
+  persons.push({ name: 'Ny person', role: 'Roll' });
+  renderPersons();
+  setTimeout(() => editPerson(persons.length - 1), 20);
+}
+
+/* ══════════════════════════════════════════════════════
+   DOCS (steg 3)
+══════════════════════════════════════════════════════ */
+let docs = [
+  { icon: '📄', name: 'Ritning A204' },
+  { icon: '🔗', name: 'Monteringsanvisning Fogmassa X' },
+  { icon: '🖼️', name: 'Bild: Exempelmontage' },
+];
+function renderDocs() {
+  const list = document.getElementById('docList');
+  list.innerHTML = '';
+  docs.forEach((d, i) => {
+    const item = document.createElement('div');
+    item.className = 'doc-item';
+    item.innerHTML = `<span class="doc-icon">${d.icon}</span>
+      <input class="doc-name-input" type="text" value="${escHtml(d.name)}" onchange="docs[${i}].name=this.value"/>
+      <button class="del-btn" onclick="removeDoc(${i})" title="Ta bort">✕</button>`;
+    list.appendChild(item);
+  });
+}
+function addDoc() {
+  docs.push({ icon: '📄', name: '' });
+  renderDocs();
+  const inputs = document.querySelectorAll('.doc-name-input');
+  if (inputs.length) inputs[inputs.length-1].focus();
+}
+function removeDoc(i) { docs.splice(i,1); renderDocs(); }
+
+/* ══════════════════════════════════════════════════════
+   RISKS (steg 4) – med topic-knapp
+══════════════════════════════════════════════════════ */
+let risks = [
+  { risk: 'Kontakt med fogmassa',       atgard: 'Handskar och glasögon vid applicering', ansvarig: 'Anders', topicGuid: null },
+  { risk: 'Inandning av lösningsmedel', atgard: 'Ventilera, använd halvmask A2',          ansvarig: 'Arvid',  topicGuid: null },
+  { risk: 'Arbete från stege',          atgard: 'Använd ställning eller arbetsplattform', ansvarig: '',       topicGuid: null },
+];
+
+function renderRisks() {
+  const tbody = document.getElementById('riskBody');
+  tbody.innerHTML = '';
+  risks.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    const topicState = r.topicGuid
+      ? `class="topic-btn sent" disabled title="Topic: ${escHtml(r.topicGuid)}">✓ Skapat`
+      : `class="topic-btn" onclick="createTopic(${i},this)" title="Skapa topic i StreamBIM">📌 Topic`;
+    tr.innerHTML = `
+      <td><input class="risk-input" type="text" value="${escHtml(r.risk)}"     placeholder="Beskriv risk…"  onchange="risks[${i}].risk=this.value"/></td>
+      <td><input class="risk-input" type="text" value="${escHtml(r.atgard)}"   placeholder="Åtgärd…"        onchange="risks[${i}].atgard=this.value"/></td>
+      <td><input class="risk-input" type="text" value="${escHtml(r.ansvarig)}" placeholder="Namn…"          onchange="risks[${i}].ansvarig=this.value"/></td>
+      <td><button ${topicState}</button></td>
+      <td><button class="del-btn" onclick="removeRisk(${i})">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function addRisk() {
+  risks.push({ risk: '', atgard: '', ansvarig: '', topicGuid: null });
+  renderRisks();
+  const rows = document.querySelectorAll('#riskBody tr');
+  if (rows.length) rows[rows.length-1].querySelector('input').focus();
+}
+function removeRisk(i) { risks.splice(i,1); renderRisks(); }
+
+/* ══════════════════════════════════════════════════════
+   SIGNERS (steg 6)
+══════════════════════════════════════════════════════ */
+let signers = [
+  { name: 'Anders Svensson', role: 'Ansvarig', signed: false },
+  { name: 'Arvid Byggare',   role: 'Utförare', signed: false },
+];
+function renderSigners() {
+  const tbody = document.getElementById('signBody');
+  tbody.innerHTML = '';
+  signers.forEach((s, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="sign-input" type="text" value="${escHtml(s.name)}" placeholder="Namn…"  onchange="signers[${i}].name=this.value"/></td>
+      <td><input class="sign-input" type="text" value="${escHtml(s.role)}" placeholder="Roll…"  onchange="signers[${i}].role=this.value" style="color:var(--muted)"/></td>
+      <td><button class="sign-btn ${s.signed?'signed':''}" onclick="signRow(${i},this)">${s.signed?'✓ Signerat':'Signera'}</button></td>
+      <td><button class="del-btn" onclick="removeSigner(${i})">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function signRow(i, btn) {
+  signers[i].signed = true;
+  btn.textContent = '✓ Signerat';
+  btn.className = 'sign-btn signed';
+  toast('Signering registrerad');
+}
+function removeSigner(i) { signers.splice(i,1); renderSigners(); }
+function addSigner() {
+  signers.push({ name: '', role: '', signed: false });
+  renderSigners();
+  const inputs = document.querySelectorAll('#signBody .sign-input');
+  if (inputs.length) inputs[inputs.length-2].focus();
+}
+
+/* ══════════════════════════════════════════════════════
+   WIZARD
+══════════════════════════════════════════════════════ */
+const STEPS     = ['Aktivera','Grunddata','Arbetsmoment','Risker','Resurser','Signering'];
+const BTN_LABEL = ['','Bekräfta och fortsätt →','Bekräfta grunddata och fortsätt →',
+  'Bekräfta arbetsmoment och fortsätt →','Bekräfta risker och fortsätt →',
+  'Bekräfta resurser och fortsätt →','Skapa PDF och spara'];
+let currentStep = 1;
+
+function buildStepBar() {
+  const bar = document.getElementById('stepsBar');
+  bar.innerHTML = '';
+  STEPS.forEach((label, i) => {
+    const n = i + 1;
+    const cls = n < currentStep ? 'done' : n === currentStep ? 'active' : '';
+    const item = document.createElement('div');
+    item.className = 'step-item ' + cls;
+    item.innerHTML = `<div class="step-num">${n < currentStep ? '✓' : n}</div><div class="step-label">${label}</div>`;
+    bar.appendChild(item);
+    if (i < STEPS.length-1) {
+      const c = document.createElement('div');
+      c.className = 'step-connector';
+      bar.appendChild(c);
+    }
+  });
+}
+function showStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('step-'+n).classList.add('active');
+  document.getElementById('btnBack').style.display = n > 1 ? 'block' : 'none';
+  document.getElementById('btnNext').textContent = BTN_LABEL[n];
+  if (n === 6) updateAttachmentSummary();
+  buildStepBar();
+  document.getElementById('body').scrollTop = 0;
+}
+function nextStep() {
+  if (currentStep === 6) {
+    if (!document.getElementById('ab-confirm').checked) {
+      toast('Bocka i bekräftelsrutan för att slutföra'); return;
+    }
+    finishAndExport(); return;
+  }
+  showStep(++currentStep);
+}
+function prevStep() { showStep(--currentStep); }
+
+function finishAndExport() {
+  toast('Skapar PDF och sparar i dokumentmapp…');
+  setTimeout(() => toast('Arbetsberedning sparad ✓'), 2200);
+}
+
+/* ══════════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════════ */
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+renderPersons();
+renderDocs();
+renderRisks();
+renderSigners();
+showStep(1);
+</script>
+</body>
+</html>
