@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Arbetsberedning – NCC Field</title>
+  <title>Arbetsberedning â NCC Field</title>
   <script src="https://cdn.jsdelivr.net/npm/streambim-widget-api@3/dist/streambim-widget-api.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -28,7 +28,7 @@
     html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.5; }
     #app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-    /* ── Header ── */
+    /* ââ Header ââ */
     .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; height: 48px; gap: 8px; }
     .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
     .ncc-badge { background: var(--yellow); color: #000; font-weight: 800; font-size: 11px; padding: 2px 7px; border-radius: 4px; letter-spacing: .3px; flex-shrink: 0; }
@@ -39,7 +39,7 @@
     .cdot.pulse { animation: blink 1.4s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-    /* ── Step bar ── */
+    /* ââ Step bar ââ */
     .steps-bar { display: flex; align-items: center; padding: 10px 16px 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; scrollbar-width: none; }
     .steps-bar::-webkit-scrollbar { display: none; }
     .step-item { display: flex; align-items: center; flex-shrink: 0; }
@@ -51,7 +51,7 @@
     .step-item.done .step-num { border-color: var(--green); background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }
     .step-item.done .step-label { color: var(--green); }
 
-    /* ── Body ── */
+    /* ââ Body ââ */
     .body { flex: 1; overflow-y: auto; padding: 16px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
     .body::-webkit-scrollbar { width: 4px; }
     .body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
@@ -60,7 +60,7 @@
     .step-heading { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
     .step-sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; line-height: 1.5; }
 
-    /* ── Form ── */
+    /* ââ Form ââ */
     .field-label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
     .field { margin-bottom: 14px; }
     input[type="text"], textarea, select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: inherit; font-size: 13px; padding: 9px 12px; outline: none; transition: border-color .15s; resize: vertical; }
@@ -68,15 +68,15 @@
     textarea { min-height: 68px; }
     select option { background: #222; }
 
-    /* ── Notes ── */
+    /* ââ Notes ââ */
     .info-note { display: flex; align-items: flex-start; gap: 7px; background: color-mix(in srgb, var(--yellow) 8%, transparent); border: 1px solid color-mix(in srgb, var(--yellow) 25%, transparent); border-radius: var(--radius); padding: 8px 10px; font-size: 11px; color: var(--yellow); margin-bottom: 14px; }
     .success-note { display: flex; align-items: flex-start; gap: 7px; background: color-mix(in srgb, var(--green) 10%, transparent); border: 1px solid color-mix(in srgb, var(--green) 30%, transparent); border-radius: var(--radius); padding: 8px 10px; font-size: 11px; color: var(--green); margin-bottom: 14px; }
 
-    /* ── Section divider ── */
+    /* ââ Section divider ââ */
     .section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 16px 0 8px; display: flex; align-items: center; gap: 8px; }
     .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    /* ── Object banner ── */
+    /* ââ Object banner ââ */
     .object-banner { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--yellow); border-radius: var(--radius); padding: 9px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .object-banner-icon { font-size: 16px; }
     .object-banner-info { flex: 1; min-width: 0; }
@@ -85,7 +85,7 @@
     .highlight-btn { background: none; border: 1px solid var(--border2); border-radius: 6px; color: var(--blue); font-size: 10px; font-family: inherit; padding: 4px 8px; cursor: pointer; white-space: nowrap; transition: border-color .15s; }
     .highlight-btn:hover { border-color: var(--blue); }
 
-    /* ── API-action row (steg 1 buttons) ── */
+    /* ââ API-action row (steg 1 buttons) ââ */
     .action-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .api-btn { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; color: var(--text); font-family: inherit; font-size: 11px; font-weight: 600; padding: 7px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: border-color .15s, background .15s; white-space: nowrap; }
     .api-btn:hover { border-color: var(--yellow); }
@@ -94,17 +94,17 @@
     .api-btn.done { border-color: var(--green); color: var(--green); }
     .api-btn.error { border-color: var(--red); color: var(--red); }
 
-    /* ── Screenshot preview ── */
+    /* ââ Screenshot preview ââ */
     .screenshot-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
     .screenshot-box img { width: 100%; display: block; max-height: 160px; object-fit: cover; }
     .screenshot-box-label { padding: 6px 10px; font-size: 10px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
 
-    /* ── Floorplan preview ── */
+    /* ââ Floorplan preview ââ */
     .floorplan-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
     .floorplan-box img { width: 100%; display: block; max-height: 200px; object-fit: contain; background: #111; }
     .floorplan-box-label { padding: 6px 10px; font-size: 10px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
 
-    /* ── Person cards ── */
+    /* ââ Person cards ââ */
     .person-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
     .person-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 11px; display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; transition: border-color .15s; }
     .person-card.editing { border-color: var(--yellow); }
@@ -123,7 +123,7 @@
     .icon-btn.ok:hover { color: #2da868; }
     .icon-btn.del:hover { color: var(--red); }
 
-    /* ── Documents ── */
+    /* ââ Documents ââ */
     .doc-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
     .doc-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
     .doc-icon { font-size: 14px; flex-shrink: 0; }
@@ -132,7 +132,7 @@
     .add-dashed-btn { background: none; border: 1px dashed var(--border2); border-radius: var(--radius); color: var(--muted); font-size: 12px; font-family: inherit; padding: 7px 12px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; transition: border-color .15s, color .15s; margin-bottom: 14px; }
     .add-dashed-btn:hover { border-color: var(--yellow); color: var(--yellow); }
 
-    /* ── Risk table ── */
+    /* ââ Risk table ââ */
     .risk-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 12px; }
     .risk-table th { text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--yellow); padding: 0 6px 8px; border-bottom: 1px solid var(--border); }
     .risk-table td { padding: 5px 4px; border-bottom: 1px solid var(--border); vertical-align: middle; }
@@ -151,7 +151,7 @@
     .topic-btn.sent { border-color: var(--green); color: var(--green); cursor: default; }
     .topic-btn.err  { border-color: var(--red);   color: var(--red);   }
 
-    /* ── Resource cards ── */
+    /* ââ Resource cards ââ */
     .resource-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .resource-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 12px; }
     .resource-title { display: flex; align-items: center; gap: 7px; font-weight: 700; font-size: 12px; margin-bottom: 10px; }
@@ -163,7 +163,7 @@
     .res-input.link { color: var(--blue); }
     .res-input::placeholder { color: var(--muted2); }
 
-    /* ── Sign table ── */
+    /* ââ Sign table ââ */
     .sign-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 10px; }
     .sign-table th { text-align: left; padding: 0 8px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); border-bottom: 1px solid var(--border); }
     .sign-table td { padding: 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
@@ -174,27 +174,27 @@
     .sign-btn:hover { background: color-mix(in srgb, var(--yellow) 22%, transparent); }
     .sign-btn.signed { background: color-mix(in srgb, var(--green) 12%, transparent); border-color: color-mix(in srgb, var(--green) 35%, transparent); color: var(--green); cursor: default; }
 
-    /* ── Checkbox ── */
+    /* ââ Checkbox ââ */
     .checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
     input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--yellow); flex-shrink: 0; margin-top: 1px; cursor: pointer; }
     .checkbox-label { font-size: 12px; color: var(--muted); cursor: pointer; }
 
-    /* ── Footer ── */
+    /* ââ Footer ââ */
     .footer { padding: 10px 16px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; display: flex; gap: 8px; }
     .btn-back { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: inherit; font-size: 12px; font-weight: 600; padding: 9px 16px; cursor: pointer; transition: background .15s; flex-shrink: 0; }
     .btn-back:hover { background: var(--surface3); }
     .btn-primary { flex: 1; background: var(--yellow); border: none; border-radius: var(--radius); color: #000; font-family: inherit; font-size: 13px; font-weight: 700; padding: 10px 16px; cursor: pointer; transition: background .15s; }
     .btn-primary:hover { background: var(--yellow-h); }
 
-    /* ── Toast ── */
+    /* ââ Toast ââ */
     #toast { position: fixed; bottom: 64px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 6px 14px; border-radius: 8px; font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; white-space: nowrap; z-index: 99; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── Spinner ── */
+    /* ââ Spinner ââ */
     .spin { display: inline-block; width: 10px; height: 10px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Bekräftelse-overlay (skärmbild) ── */
+    /* ââ BekrÃ¤ftelse-overlay (skÃ¤rmbild) ââ */
     #screenshotOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 12px; }
     #screenshotOverlay.active { display: flex; }
     .overlay-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 20px; max-width: 340px; width: 100%; text-align: center; }
@@ -214,7 +214,7 @@
       <div class="header-title">Arbetsberedning</div>
     </div>
     <div id="connBadge" class="conn-pill">
-      <div class="cdot pulse"></div><span>Ansluter…</span>
+      <div class="cdot pulse"></div><span>Ansluterâ¦</span>
     </div>
   </div>
 
@@ -222,42 +222,42 @@
 
   <div class="body" id="body">
 
-    <!-- ══ STEG 1 ══ -->
+    <!-- ââ STEG 1 ââ -->
     <div class="step-panel" id="step-1">
-      <div class="step-heading">Steg 1 – Aktivera arbetsberedning</div>
-      <div class="step-sub">Markera ett objekt i modellen eller starta fristående.</div>
+      <div class="step-heading">Steg 1 â Aktivera arbetsberedning</div>
+      <div class="step-sub">Markera ett objekt i modellen eller starta fristÃ¥ende.</div>
 
       <!-- Objekt-banner -->
       <div id="objectBanner" class="object-banner" style="display:none">
-        <div class="object-banner-icon">🧱</div>
+        <div class="object-banner-icon">ð§±</div>
         <div class="object-banner-info">
           <div class="object-banner-title" id="objectBannerTitle">Valt objekt</div>
-          <div class="object-banner-sub" id="objectBannerSub">—</div>
+          <div class="object-banner-sub" id="objectBannerSub">â</div>
         </div>
         <button class="highlight-btn" onclick="highlightSelected()">Visa i modell</button>
       </div>
 
       <div id="noObjectNote" class="info-note">
-        <span>ℹ️</span>
-        <span>Inget objekt markerat – fyll i manuellt eller klicka på ett objekt i modellen.</span>
+        <span>â¹ï¸</span>
+        <span>Inget objekt markerat â fyll i manuellt eller klicka pÃ¥ ett objekt i modellen.</span>
       </div>
 
-      <!-- API-knappar: Skärmbild + Planritning (syns bara när objekt är valt) -->
+      <!-- API-knappar: SkÃ¤rmbild + Planritning (syns bara nÃ¤r objekt Ã¤r valt) -->
       <div class="action-row" id="apiActionRow" style="display:none">
         <button class="api-btn" id="btnScreenshot" onclick="startScreenshotFlow()">
-          📷 Välj vy &amp; ta skärmbild
+          ð· VÃ¤lj vy &amp; ta skÃ¤rmbild
         </button>
         <button class="api-btn" id="btnFloorplan" onclick="captureFloorplan()">
-          🗺️ Hämta planritning
+          ðºï¸ HÃ¤mta planritning
         </button>
       </div>
 
-      <!-- Skärmbild preview -->
+      <!-- SkÃ¤rmbild preview -->
       <div id="screenshotPreview" class="screenshot-box" style="display:none">
-        <img id="screenshotImg" src="" alt="Skärmbild"/>
+        <img id="screenshotImg" src="" alt="SkÃ¤rmbild"/>
         <div class="screenshot-box-label">
-          <span>📷 Modellvy bifogad</span>
-          <button class="del-btn" onclick="clearScreenshot()" title="Ta bort">✕ Ta bort</button>
+          <span>ð· Modellvy bifogad</span>
+          <button class="del-btn" onclick="clearScreenshot()" title="Ta bort">â Ta bort</button>
         </div>
       </div>
 
@@ -265,18 +265,18 @@
       <div id="floorplanPreview" class="floorplan-box" style="display:none">
         <img id="floorplanImg" src="" alt="Planritning"/>
         <div class="floorplan-box-label">
-          <span>🗺️ Planritning med markering bifogad</span>
-          <button class="del-btn" onclick="clearFloorplan()" title="Ta bort">✕ Ta bort</button>
+          <span>ðºï¸ Planritning med markering bifogad</span>
+          <button class="del-btn" onclick="clearFloorplan()" title="Ta bort">â Ta bort</button>
         </div>
       </div>
 
       <div class="field">
         <label class="field-label">Typ av arbetsberedning</label>
         <select id="ab-type">
-          <option value="">Välj typ…</option>
-          <option value="fogning">Fogning / tätning</option>
+          <option value="">VÃ¤lj typâ¦</option>
+          <option value="fogning">Fogning / tÃ¤tning</option>
           <option value="betong">Betongarbeten</option>
-          <option value="stalskelett">Stålskelett</option>
+          <option value="stalskelett">StÃ¥lskelett</option>
           <option value="fasad">Fasadarbeten</option>
           <option value="el">El-installation</option>
           <option value="vvs">VVS-arbeten</option>
@@ -285,75 +285,75 @@
       </div>
       <div class="field">
         <label class="field-label">Projektnamn</label>
-        <input type="text" id="ab-project" placeholder="Hämtas från StreamBIM…" value="Projekt Skogsvägen"/>
+        <input type="text" id="ab-project" placeholder="HÃ¤mtas frÃ¥n StreamBIMâ¦" value="Projekt SkogsvÃ¤gen"/>
       </div>
       <div class="field">
         <label class="field-label">Plats / zon</label>
-        <input type="text" id="ab-zone" placeholder="t.ex. B-vinge vån 2, fack B204–B210"/>
+        <input type="text" id="ab-zone" placeholder="t.ex. B-vinge vÃ¥n 2, fack B204âB210"/>
       </div>
     </div>
 
-    <!-- ══ STEG 2 ══ -->
+    <!-- ââ STEG 2 ââ -->
     <div class="step-panel" id="step-2">
-      <div class="step-heading">Steg 2 – Grunddata</div>
+      <div class="step-heading">Steg 2 â Grunddata</div>
       <div class="step-sub">Fyll i arbetsmoment, omfattning, tidplanekod och ansvariga.</div>
 
       <div class="field">
         <label class="field-label">Arbetsmoment</label>
-        <input type="text" id="ab-moment" placeholder="t.ex. Fogning / tätning"/>
+        <input type="text" id="ab-moment" placeholder="t.ex. Fogning / tÃ¤tning"/>
       </div>
       <div class="field">
         <label class="field-label">Omfattning / beskrivning</label>
-        <textarea id="ab-scope" placeholder="t.ex. Väggar i fasadstråk mot skolgård, fack B204–B210"></textarea>
+        <textarea id="ab-scope" placeholder="t.ex. VÃ¤ggar i fasadstrÃ¥k mot skolgÃ¥rd, fack B204âB210"></textarea>
       </div>
       <div class="info-note">
-        <span>⚠️</span>
-        <span>Tidplanekod skrivs in manuellt i MVP. Automatisk hämtning från Yolean i fullversion.</span>
+        <span>â ï¸</span>
+        <span>Tidplanekod skrivs in manuellt i MVP. Automatisk hÃ¤mtning frÃ¥n Yolean i fullversion.</span>
       </div>
       <div class="field">
         <label class="field-label">Tidplanekod / aktivitet</label>
-        <input type="text" id="ab-tpkod" placeholder="t.ex. 571 Fogning/tätning"/>
+        <input type="text" id="ab-tpkod" placeholder="t.ex. 571 Fogning/tÃ¤tning"/>
       </div>
 
       <div class="section-label">Projekt &amp; ansvariga</div>
       <div class="person-grid" id="personGrid"></div>
-      <button class="add-dashed-btn" onclick="addPerson()">+ Lägg till person</button>
+      <button class="add-dashed-btn" onclick="addPerson()">+ LÃ¤gg till person</button>
     </div>
 
-    <!-- ══ STEG 3 ══ -->
+    <!-- ââ STEG 3 ââ -->
     <div class="step-panel" id="step-3">
-      <div class="step-heading">Steg 3 – Arbetsmoment &amp; handlingar</div>
-      <div class="step-sub">Beskriv själva arbetsmomentet och bifoga relevanta handlingar.</div>
+      <div class="step-heading">Steg 3 â Arbetsmoment &amp; handlingar</div>
+      <div class="step-sub">Beskriv sjÃ¤lva arbetsmomentet och bifoga relevanta handlingar.</div>
 
       <div class="field">
         <label class="field-label">Arbetsmoment / aktivitet</label>
-        <textarea id="ab-aktivitet" placeholder="Beskriv vad som ska utföras…"></textarea>
+        <textarea id="ab-aktivitet" placeholder="Beskriv vad som ska utfÃ¶rasâ¦"></textarea>
       </div>
       <div class="field">
         <label class="field-label">Kommentarer / instruktioner</label>
-        <textarea id="ab-kommentar" placeholder="Särskild uppmärksamhet, speciella krav…"></textarea>
+        <textarea id="ab-kommentar" placeholder="SÃ¤rskild uppmÃ¤rksamhet, speciella kravâ¦"></textarea>
       </div>
 
       <div class="section-label">Handlingar / referenser</div>
       <div class="doc-list" id="docList"></div>
-      <button class="add-dashed-btn" onclick="addDoc()">+ Lägg till handling</button>
+      <button class="add-dashed-btn" onclick="addDoc()">+ LÃ¤gg till handling</button>
 
       <div class="field">
-        <label class="field-label">Exempel / länkar</label>
-        <input type="text" id="ab-link" placeholder="Länk till mall eller tidigare arbetsberedning"/>
+        <label class="field-label">Exempel / lÃ¤nkar</label>
+        <input type="text" id="ab-link" placeholder="LÃ¤nk till mall eller tidigare arbetsberedning"/>
       </div>
     </div>
 
-    <!-- ══ STEG 4 ══ -->
+    <!-- ââ STEG 4 ââ -->
     <div class="step-panel" id="step-4">
-      <div class="step-heading">Steg 4 – Risker &amp; åtgärder</div>
-      <div class="step-sub">Föreslagna risker baseras på AFS 2023:13. Granska, ange ansvarig och skapa topics vid behov.</div>
+      <div class="step-heading">Steg 4 â Risker &amp; Ã¥tgÃ¤rder</div>
+      <div class="step-sub">FÃ¶reslagna risker baseras pÃ¥ AFS 2023:13. Granska, ange ansvarig och skapa topics vid behov.</div>
 
       <table class="risk-table">
         <thead>
           <tr>
             <th style="width:30%">Risk</th>
-            <th style="width:33%">Åtgärd</th>
+            <th style="width:33%">ÃtgÃ¤rd</th>
             <th style="width:17%">Ansvarig</th>
             <th style="width:13%">Topic</th>
             <th style="width:7%"></th>
@@ -361,48 +361,48 @@
         </thead>
         <tbody id="riskBody"></tbody>
       </table>
-      <button class="add-small-btn" onclick="addRisk()">+ Lägg till risk</button>
+      <button class="add-small-btn" onclick="addRisk()">+ LÃ¤gg till risk</button>
 
       <div class="info-note">
-        <span>ℹ️</span>
-        <span>Klicka "📌 Topic" för att skapa en avvikelse/topic i StreamBIM direkt kopplad till objektet.</span>
+        <span>â¹ï¸</span>
+        <span>Klicka "ð Topic" fÃ¶r att skapa en avvikelse/topic i StreamBIM direkt kopplad till objektet.</span>
       </div>
     </div>
 
-    <!-- ══ STEG 5 ══ -->
+    <!-- ââ STEG 5 ââ -->
     <div class="step-panel" id="step-5">
-      <div class="step-heading">Steg 5 – Resurser, material &amp; maskiner</div>
-      <div class="step-sub">Ange resurser, maskiner, material och tidsaspekter för momentet.</div>
+      <div class="step-heading">Steg 5 â Resurser, material &amp; maskiner</div>
+      <div class="step-sub">Ange resurser, maskiner, material och tidsaspekter fÃ¶r momentet.</div>
       <div class="resource-grid">
         <div class="resource-card">
-          <div class="resource-title"><span class="resource-icon">🔧</span>Maskiner &amp; utrustning</div>
-          <input class="res-input" type="text" placeholder="Verktyg och maskiner…" value="Fogpistol, ställning, arbetsplattform"/>
-          <input class="res-input muted" type="text" placeholder="Kommentar…" value="Verktyg kontrollerade"/>
+          <div class="resource-title"><span class="resource-icon">ð§</span>Maskiner &amp; utrustning</div>
+          <input class="res-input" type="text" placeholder="Verktyg och maskinerâ¦" value="Fogpistol, stÃ¤llning, arbetsplattform"/>
+          <input class="res-input muted" type="text" placeholder="Kommentarâ¦" value="Verktyg kontrollerade"/>
         </div>
         <div class="resource-card">
-          <div class="resource-title"><span class="resource-icon">⏱️</span>Tid &amp; ekonomi</div>
-          <input class="res-input" type="text" placeholder="Estimerad tid…" value="8 timmar – 2 byggare"/>
-          <input class="res-input muted" type="text" placeholder="Kostnad…" value="Kostnad enligt kalkyl"/>
-          <input class="res-input muted" type="text" placeholder="Aktivitetskod…" value="Aktivitet 571 Fogning/tätning"/>
+          <div class="resource-title"><span class="resource-icon">â±ï¸</span>Tid &amp; ekonomi</div>
+          <input class="res-input" type="text" placeholder="Estimerad tidâ¦" value="8 timmar â 2 byggare"/>
+          <input class="res-input muted" type="text" placeholder="Kostnadâ¦" value="Kostnad enligt kalkyl"/>
+          <input class="res-input muted" type="text" placeholder="Aktivitetskodâ¦" value="Aktivitet 571 Fogning/tÃ¤tning"/>
         </div>
         <div class="resource-card">
-          <div class="resource-title"><span class="resource-icon">📦</span>Material</div>
-          <input class="res-input" type="text" placeholder="Material…" value="Silikonfogmassa, primer"/>
-          <input class="res-input muted" type="text" placeholder="Leveranspunkt…" value="B-vinge vån 2 (B204–B210)"/>
-          <input class="res-input muted" type="text" placeholder="Avfallshantering…" value="Spill → kemavfall"/>
+          <div class="resource-title"><span class="resource-icon">ð¦</span>Material</div>
+          <input class="res-input" type="text" placeholder="Materialâ¦" value="Silikonfogmassa, primer"/>
+          <input class="res-input muted" type="text" placeholder="Leveranspunktâ¦" value="B-vinge vÃ¥n 2 (B204âB210)"/>
+          <input class="res-input muted" type="text" placeholder="Avfallshanteringâ¦" value="Spill â kemavfall"/>
         </div>
         <div class="resource-card">
-          <div class="resource-title"><span class="resource-icon">🌿</span>Kvalitet &amp; miljö</div>
-          <input class="res-input" type="text" placeholder="Egenkontroll…" value="Egenkontroll fogbredd/vidfästning"/>
-          <input class="res-input link" type="text" placeholder="Länk till checklista…" value="Checklista egenkontroll fogning"/>
+          <div class="resource-title"><span class="resource-icon">ð¿</span>Kvalitet &amp; miljÃ¶</div>
+          <input class="res-input" type="text" placeholder="Egenkontrollâ¦" value="Egenkontroll fogbredd/vidfÃ¤stning"/>
+          <input class="res-input link" type="text" placeholder="LÃ¤nk till checklistaâ¦" value="Checklista egenkontroll fogning"/>
         </div>
       </div>
     </div>
 
-    <!-- ══ STEG 6 ══ -->
+    <!-- ââ STEG 6 ââ -->
     <div class="step-panel" id="step-6">
-      <div class="step-heading">Steg 6 – Kvittens &amp; export</div>
-      <div class="step-sub">Samtliga signerare måste gå igenom arbetsberedningen innan PDF-export.</div>
+      <div class="step-heading">Steg 6 â Kvittens &amp; export</div>
+      <div class="step-sub">Samtliga signerare mÃ¥ste gÃ¥ igenom arbetsberedningen innan PDF-export.</div>
 
       <!-- Bilagor-sammanfattning -->
       <div id="attachmentSummary"></div>
@@ -411,34 +411,34 @@
         <thead><tr><th>Namn</th><th>Roll</th><th>Signering</th><th></th></tr></thead>
         <tbody id="signBody"></tbody>
       </table>
-      <button class="add-dashed-btn" onclick="addSigner()">+ Lägg till signerare</button>
+      <button class="add-dashed-btn" onclick="addSigner()">+ LÃ¤gg till signerare</button>
 
       <div class="field" style="margin-top:14px">
         <label class="field-label">Kommentar</label>
-        <input type="text" id="ab-signkomment" placeholder="t.ex. Genomgång klar 2025-11-07"/>
+        <input type="text" id="ab-signkomment" placeholder="t.ex. GenomgÃ¥ng klar 2025-11-07"/>
       </div>
       <div class="checkbox-row">
         <input type="checkbox" id="ab-confirm"/>
-        <label for="ab-confirm" class="checkbox-label">Jag har tagit del av och förstått arbetsberedningen.</label>
+        <label for="ab-confirm" class="checkbox-label">Jag har tagit del av och fÃ¶rstÃ¥tt arbetsberedningen.</label>
       </div>
     </div>
 
   </div><!-- /body -->
 
   <div class="footer">
-    <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none">← Tillbaka</button>
-    <button class="btn-primary" id="btnNext" onclick="nextStep()">Bekräfta och fortsätt →</button>
+    <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none">â Tillbaka</button>
+    <button class="btn-primary" id="btnNext" onclick="nextStep()">BekrÃ¤fta och fortsÃ¤tt â</button>
   </div>
 </div>
 
-<!-- Skärmbild-overlay -->
+<!-- SkÃ¤rmbild-overlay -->
 <div id="screenshotOverlay">
   <div class="overlay-card">
-    <div class="overlay-title">📷 Välj vy i modellen</div>
-    <div class="overlay-sub">Ställ in önskad kameravy i StreamBIM-modellen, klicka sedan "Ta skärmbild nu" när du är redo.</div>
+    <div class="overlay-title">ð· VÃ¤lj vy i modellen</div>
+    <div class="overlay-sub">StÃ¤ll in Ã¶nskad kameravy i StreamBIM-modellen, klicka sedan "Ta skÃ¤rmbild nu" nÃ¤r du Ã¤r redo.</div>
     <div class="overlay-btns">
       <button class="overlay-cancel" onclick="cancelScreenshot()">Avbryt</button>
-      <button class="overlay-confirm" onclick="confirmScreenshot()">Ta skärmbild nu</button>
+      <button class="overlay-confirm" onclick="confirmScreenshot()">Ta skÃ¤rmbild nu</button>
     </div>
   </div>
 </div>
@@ -446,26 +446,26 @@
 <div id="toast"></div>
 
 <script>
-/* ══════════════════════════════════════════════════════
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
    STATE
-══════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 let API            = null;
 let selectedGuid   = null;
-let cameraPosition = null;   // sparas vid objektpick för planritning
+let cameraPosition = null;   // sparas vid objektpick fÃ¶r planritning
 let screenshotDataUrl = null;
 let floorplanDataUrl  = null;
 let projectId      = null;
 
-/* ══════════════════════════════════════════════════════
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
    STREAMBIM-ANSLUTNING
-══════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 function setDemoMode() {
   const b = document.getElementById('connBadge');
-  b.innerHTML = '<div class="cdot"></div><span>Demo-läge</span>';
+  b.innerHTML = '<div class="cdot"></div><span>Demo-lÃ¤ge</span>';
 }
 
 try {
-  StreamBIM.connectToParent(window, {
+  StreamBIM.connect(window, {
     pickedObject(r) { if (r?.guid) { selectedGuid = r.guid; onObjectPicked(r.guid); } },
     cameraChanged(state) { if (state?.position) cameraPosition = state.position; }
   }).then(() => {
@@ -478,13 +478,13 @@ try {
       const el = document.getElementById('ab-project');
       if (el && id) el.value = 'Projekt ' + id;
     }).catch(() => {});
-    // Hämta initial kameraposition
+    // HÃ¤mta initial kameraposition
     API.getCameraState().then(s => { if (s?.position) cameraPosition = s.position; }).catch(()=>{});
   }).catch(setDemoMode);
 } catch(e) { setDemoMode(); }
 
 async function onObjectPicked(guid) {
-  document.getElementById('objectBannerSub').textContent = 'GUID: ' + guid.substring(0, 20) + '…';
+  document.getElementById('objectBannerSub').textContent = 'GUID: ' + guid.substring(0, 20) + 'â¦';
   document.getElementById('objectBanner').style.display = 'flex';
   document.getElementById('noObjectNote').style.display = 'none';
   document.getElementById('apiActionRow').style.display = 'flex';
@@ -492,34 +492,34 @@ async function onObjectPicked(guid) {
   let name = 'IFC-objekt';
   if (API) {
     try {
-      const info = await API.getObjectInfo(guid);
+      const info = await StreamBIM.getObjectInfo(guid);
       if (info?.name) name = info.name;
     } catch(e) {}
     // Uppdatera kameraposition
     try { const s = await API.getCameraState(); if (s?.position) cameraPosition = s.position; } catch(e) {}
   } else {
-    name = 'Fasadvägg B-vinge';
+    name = 'FasadvÃ¤gg B-vinge';
   }
   document.getElementById('objectBannerTitle').textContent = name;
   const z = document.getElementById('ab-zone');
   if (z && !z.value) z.value = name;
-  toast('Objekt markerat – ' + name);
+  toast('Objekt markerat â ' + name);
 }
 
 async function highlightSelected() {
   if (!API || !selectedGuid) { toast('Inget objekt valt'); return; }
   try {
     await API.deHighlightAllObjects();
-    await API.highlightObject(selectedGuid);
+    await StreamBIM.highlightObject(selectedGuid);
     await API.gotoObject(selectedGuid);
   } catch(e) { toast('Kunde inte visa objekt'); }
 }
 
-/* ══════════════════════════════════════════════════════
-   📷 SKÄRMBILD
-══════════════════════════════════════════════════════ */
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+   ð· SKÃRMBILD
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 function startScreenshotFlow() {
-  // Visa overlay – användaren ställer in vy och klickar bekräfta
+  // Visa overlay â anvÃ¤ndaren stÃ¤ller in vy och klickar bekrÃ¤fta
   document.getElementById('screenshotOverlay').classList.add('active');
 }
 
@@ -531,14 +531,14 @@ async function confirmScreenshot() {
   document.getElementById('screenshotOverlay').classList.remove('active');
   const btn = document.getElementById('btnScreenshot');
   btn.classList.add('loading');
-  btn.innerHTML = '<span class="spin"></span> Tar skärmbild…';
+  btn.innerHTML = '<span class="spin"></span> Tar skÃ¤rmbildâ¦';
 
   try {
     let dataUrl;
     if (API) {
-      dataUrl = await API.takeScreenshot();
+      dataUrl = await StreamBIM.takeScreenshot();
     } else {
-      // Demo: generera en grå placeholder
+      // Demo: generera en grÃ¥ placeholder
       dataUrl = await makeDemoScreenshot();
     }
     screenshotDataUrl = dataUrl;
@@ -546,15 +546,15 @@ async function confirmScreenshot() {
     document.getElementById('screenshotPreview').style.display = 'block';
     btn.classList.remove('loading');
     btn.classList.add('done');
-    btn.innerHTML = '✓ Skärmbild tagen';
-    toast('Skärmbild bifogad ✓');
+    btn.innerHTML = 'â SkÃ¤rmbild tagen';
+    toast('SkÃ¤rmbild bifogad â');
     updateAttachmentSummary();
   } catch(e) {
     btn.classList.remove('loading');
     btn.classList.add('error');
-    btn.innerHTML = '✕ Misslyckades';
-    toast('Kunde inte ta skärmbild: ' + (e?.message || e));
-    setTimeout(() => { btn.classList.remove('error'); btn.innerHTML = '📷 Välj vy &amp; ta skärmbild'; }, 3000);
+    btn.innerHTML = 'â Misslyckades';
+    toast('Kunde inte ta skÃ¤rmbild: ' + (e?.message || e));
+    setTimeout(() => { btn.classList.remove('error'); btn.innerHTML = 'ð· VÃ¤lj vy &amp; ta skÃ¤rmbild'; }, 3000);
   }
 }
 
@@ -563,11 +563,11 @@ function clearScreenshot() {
   document.getElementById('screenshotPreview').style.display = 'none';
   const btn = document.getElementById('btnScreenshot');
   btn.classList.remove('done','error');
-  btn.innerHTML = '📷 Välj vy &amp; ta skärmbild';
+  btn.innerHTML = 'ð· VÃ¤lj vy &amp; ta skÃ¤rmbild';
   updateAttachmentSummary();
 }
 
-// Demo-placeholder: canvas → dataURL
+// Demo-placeholder: canvas â dataURL
 function makeDemoScreenshot() {
   return new Promise(resolve => {
     const c = document.createElement('canvas');
@@ -578,29 +578,29 @@ function makeDemoScreenshot() {
     ctx.fillStyle = '#f5c800';
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Demo-skärmbild (ingen modell ansluten)', 200, 100);
+    ctx.fillText('Demo-skÃ¤rmbild (ingen modell ansluten)', 200, 100);
     resolve(c.toDataURL('image/png'));
   });
 }
 
-/* ══════════════════════════════════════════════════════
-   🗺️ PLANRITNING
-══════════════════════════════════════════════════════ */
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+   ðºï¸ PLANRITNING
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 async function captureFloorplan() {
   const btn = document.getElementById('btnFloorplan');
   if (!selectedGuid && !cameraPosition) {
-    toast('Markera ett objekt först');
+    toast('Markera ett objekt fÃ¶rst');
     return;
   }
 
   btn.classList.add('loading');
-  btn.innerHTML = '<span class="spin"></span> Hämtar planritning…';
+  btn.innerHTML = '<span class="spin"></span> HÃ¤mtar planritningâ¦';
 
   try {
     let dataUrl;
     if (API && cameraPosition) {
       // getAnnotatedFloorplan tar kameraposition och ritar en markering
-      dataUrl = await API.getAnnotatedFloorplan(cameraPosition);
+      dataUrl = await StreamBIM.getAnnotatedFloorplan(cameraPosition);
     } else {
       dataUrl = await makeDemoFloorplan();
     }
@@ -609,15 +609,15 @@ async function captureFloorplan() {
     document.getElementById('floorplanPreview').style.display = 'block';
     btn.classList.remove('loading');
     btn.classList.add('done');
-    btn.innerHTML = '✓ Planritning hämtad';
-    toast('Planritning med markering bifogad ✓');
+    btn.innerHTML = 'â Planritning hÃ¤mtad';
+    toast('Planritning med markering bifogad â');
     updateAttachmentSummary();
   } catch(e) {
     btn.classList.remove('loading');
     btn.classList.add('error');
-    btn.innerHTML = '✕ Misslyckades';
-    toast('Kunde inte hämta planritning: ' + (e?.message || e));
-    setTimeout(() => { btn.classList.remove('error'); btn.innerHTML = '🗺️ Hämta planritning'; }, 3000);
+    btn.innerHTML = 'â Misslyckades';
+    toast('Kunde inte hÃ¤mta planritning: ' + (e?.message || e));
+    setTimeout(() => { btn.classList.remove('error'); btn.innerHTML = 'ðºï¸ HÃ¤mta planritning'; }, 3000);
   }
 }
 
@@ -626,7 +626,7 @@ function clearFloorplan() {
   document.getElementById('floorplanPreview').style.display = 'none';
   const btn = document.getElementById('btnFloorplan');
   btn.classList.remove('done','error');
-  btn.innerHTML = '🗺️ Hämta planritning';
+  btn.innerHTML = 'ðºï¸ HÃ¤mta planritning';
   updateAttachmentSummary();
 }
 
@@ -650,7 +650,7 @@ function makeDemoFloorplan() {
     ctx.fillStyle = '#f5c800';
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('📍 Valt objekt', 200, 240);
+    ctx.fillText('ð Valt objekt', 200, 240);
     ctx.fillStyle = '#888';
     ctx.font = '10px sans-serif';
     ctx.fillText('Demo-planritning', 200, 20);
@@ -658,17 +658,17 @@ function makeDemoFloorplan() {
   });
 }
 
-/* ══════════════════════════════════════════════════════
-   📌 TOPICS (BCF via makeApiRequest)
-══════════════════════════════════════════════════════ */
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+   ð TOPICS (BCF via makeApiRequest)
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 // StreamBIM exponerar BCF-topics via pgw REST API.
-// Endpoint-mönster baserat på widget API-dokumentation:
+// Endpoint-mÃ¶nster baserat pÃ¥ widget API-dokumentation:
 //   POST /pgw/project-{id}/bcf/2.1/projects/{id}/topics
-// Vi försöker med känt mönster och fångar fel transparent.
+// Vi fÃ¶rsÃ¶ker med kÃ¤nt mÃ¶nster och fÃ¥ngar fel transparent.
 
 async function createTopic(riskIndex, btn) {
   const r = risks[riskIndex];
-  if (!r.risk) { toast('Fyll i riskbeskrivning först'); return; }
+  if (!r.risk) { toast('Fyll i riskbeskrivning fÃ¶rst'); return; }
 
   btn.classList.add('loading');
   btn.innerHTML = '<span class="spin"></span>';
@@ -677,14 +677,14 @@ async function createTopic(riskIndex, btn) {
   const title = `[AB] ${r.risk}`;
   const description = [
     `Risk: ${r.risk}`,
-    `Åtgärd: ${r.atgard || '—'}`,
-    `Ansvarig: ${r.ansvarig || '—'}`,
+    `ÃtgÃ¤rd: ${r.atgard || 'â'}`,
+    `Ansvarig: ${r.ansvarig || 'â'}`,
     selectedGuid ? `Objekt GUID: ${selectedGuid}` : '',
-    `Projekt: ${document.getElementById('ab-project').value || '—'}`,
-    `Plats: ${document.getElementById('ab-zone').value || '—'}`,
+    `Projekt: ${document.getElementById('ab-project').value || 'â'}`,
+    `Plats: ${document.getElementById('ab-zone').value || 'â'}`,
   ].filter(Boolean).join('\n');
 
-  // Försök 1: pgw REST API (StreamBIMs interna mönster)
+  // FÃ¶rsÃ¶k 1: pgw REST API (StreamBIMs interna mÃ¶nster)
   const pid = projectId || 'DEMO';
   const body = {
     topic_type: 'Issue',
@@ -694,7 +694,7 @@ async function createTopic(riskIndex, btn) {
     labels: ['Arbetsberedning', 'Risk'],
   };
 
-  // Lägg till IFC-komponent om vi har ett GUID
+  // LÃ¤gg till IFC-komponent om vi har ett GUID
   if (selectedGuid) {
     body.viewpoint = {
       components: {
@@ -707,10 +707,10 @@ async function createTopic(riskIndex, btn) {
   let topicGuid = null;
 
   if (API && pid !== 'DEMO') {
-    // Försök med BCF 2.1-endpoint via makeApiRequest
+    // FÃ¶rsÃ¶k med BCF 2.1-endpoint via makeApiRequest
     const bcfUrl = `/pgw/project-${pid}/bcf/2.1/projects/${pid}/topics`;
     try {
-      const raw = await API.makeApiRequest({
+      const raw = await StreamBIM.makeApiRequest({
         url: bcfUrl,
         method: 'POST',
         body,
@@ -721,10 +721,10 @@ async function createTopic(riskIndex, btn) {
       topicGuid = resp.guid || resp.id || '(skapad)';
       success = true;
     } catch(e1) {
-      // Försök 2: alternativt URL-mönster
+      // FÃ¶rsÃ¶k 2: alternativt URL-mÃ¶nster
       const altUrl = `/pgw/project-${pid}/api/v1/topics`;
       try {
-        const raw2 = await API.makeApiRequest({
+        const raw2 = await StreamBIM.makeApiRequest({
           url: altUrl,
           method: 'POST',
           body: { title, description, type: 'Issue', status: 'Open' },
@@ -735,7 +735,7 @@ async function createTopic(riskIndex, btn) {
         topicGuid = resp2.guid || resp2.id || '(skapad)';
         success = true;
       } catch(e2) {
-        // Logga för felsökning
+        // Logga fÃ¶r felsÃ¶kning
         console.warn('[AB] BCF topic endpoint svarade ej:', e1, e2);
       }
     }
@@ -746,41 +746,41 @@ async function createTopic(riskIndex, btn) {
     risks[riskIndex].topicGuid = topicGuid;
     btn.classList.remove('loading');
     btn.classList.add('sent');
-    btn.innerHTML = '✓ Skapat';
+    btn.innerHTML = 'â Skapat';
     btn.title = 'Topic GUID: ' + topicGuid;
-    toast('Topic skapat i StreamBIM ✓');
+    toast('Topic skapat i StreamBIM â');
   } else if (!API || pid === 'DEMO') {
-    // Demo-läge: simulera framgång
+    // Demo-lÃ¤ge: simulera framgÃ¥ng
     risks[riskIndex].topicGuid = 'DEMO-' + Date.now();
     btn.classList.remove('loading');
     btn.classList.add('sent');
-    btn.innerHTML = '✓ Demo';
-    btn.title = 'Demo-läge: topic simulerat';
+    btn.innerHTML = 'â Demo';
+    btn.title = 'Demo-lÃ¤ge: topic simulerat';
     toast('Demo: topic simulerat (ingen modell ansluten)');
   } else {
     btn.classList.remove('loading');
     btn.classList.add('err');
-    btn.innerHTML = '✕ Fel';
-    btn.title = 'Kunde inte nå topics-endpoint. Kontakta support@rendra.io för att bekräfta API-URL.';
-    toast('⚠️ Topic endpoint ej nåbar – se konsolen');
+    btn.innerHTML = 'â Fel';
+    btn.title = 'Kunde inte nÃ¥ topics-endpoint. Kontakta support@rendra.io fÃ¶r att bekrÃ¤fta API-URL.';
+    toast('â ï¸ Topic endpoint ej nÃ¥bar â se konsolen');
     setTimeout(() => {
       btn.classList.remove('err');
-      btn.innerHTML = '📌 Topic';
+      btn.innerHTML = 'ð Topic';
       btn.title = '';
     }, 4000);
   }
 }
 
-/* ══════════════════════════════════════════════════════
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
    BILAGE-SAMMANFATTNING (steg 6)
-══════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 function updateAttachmentSummary() {
   const box = document.getElementById('attachmentSummary');
   const items = [];
-  if (screenshotDataUrl) items.push('📷 Modellvy (skärmbild)');
-  if (floorplanDataUrl)  items.push('🗺️ Planritning med markering');
+  if (screenshotDataUrl) items.push('ð· Modellvy (skÃ¤rmbild)');
+  if (floorplanDataUrl)  items.push('ðºï¸ Planritning med markering');
   const topicCount = risks.filter(r => r.topicGuid).length;
-  if (topicCount > 0)    items.push(`📌 ${topicCount} topic(s) skapade i StreamBIM`);
+  if (topicCount > 0)    items.push(`ð ${topicCount} topic(s) skapade i StreamBIM`);
 
   if (items.length === 0) {
     box.innerHTML = '';
@@ -788,14 +788,14 @@ function updateAttachmentSummary() {
   }
   box.innerHTML = `
     <div class="success-note" style="flex-direction:column;gap:4px">
-      <div style="font-weight:700;margin-bottom:2px">📎 Bilagor &amp; kopplingar</div>
-      ${items.map(i => `<div>✓ ${i}</div>`).join('')}
+      <div style="font-weight:700;margin-bottom:2px">ð Bilagor &amp; kopplingar</div>
+      ${items.map(i => `<div>â ${i}</div>`).join('')}
     </div>`;
 }
 
-/* ══════════════════════════════════════════════════════
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
    PERSONS (steg 2)
-══════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 let persons = [
   { name: 'Anders Svensson', role: 'Byggsamordnare' },
   { name: 'Arvid Byggare',   role: 'Deltagare' },
@@ -814,13 +814,13 @@ function renderPersons() {
         <div class="person-role">${escHtml(p.role)}</div>
       </div>
       <div class="person-edit">
-        <input class="p-input" id="pn${i}" type="text" value="${escHtml(p.name)}" placeholder="Namn…"/>
-        <input class="p-input" id="pr${i}" type="text" value="${escHtml(p.role)}" placeholder="Roll…"/>
+        <input class="p-input" id="pn${i}" type="text" value="${escHtml(p.name)}" placeholder="Namnâ¦"/>
+        <input class="p-input" id="pr${i}" type="text" value="${escHtml(p.role)}" placeholder="Rollâ¦"/>
       </div>
       <div class="card-btns">
-        <button class="icon-btn" id="peb${i}" onclick="editPerson(${i})" title="Redigera">✏️</button>
-        <button class="icon-btn ok" id="psb${i}" onclick="savePerson(${i})" title="Spara" style="display:none">✓</button>
-        <button class="icon-btn del" onclick="removePerson(${i})" title="Ta bort">✕</button>
+        <button class="icon-btn" id="peb${i}" onclick="editPerson(${i})" title="Redigera">âï¸</button>
+        <button class="icon-btn ok" id="psb${i}" onclick="savePerson(${i})" title="Spara" style="display:none">â</button>
+        <button class="icon-btn del" onclick="removePerson(${i})" title="Ta bort">â</button>
       </div>`;
     grid.appendChild(card);
   });
@@ -843,13 +843,13 @@ function addPerson() {
   setTimeout(() => editPerson(persons.length - 1), 20);
 }
 
-/* ══════════════════════════════════════════════════════
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
    DOCS (steg 3)
-══════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 let docs = [
-  { icon: '📄', name: 'Ritning A204' },
-  { icon: '🔗', name: 'Monteringsanvisning Fogmassa X' },
-  { icon: '🖼️', name: 'Bild: Exempelmontage' },
+  { icon: 'ð', name: 'Ritning A204' },
+  { icon: 'ð', name: 'Monteringsanvisning Fogmassa X' },
+  { icon: 'ð¼ï¸', name: 'Bild: Exempelmontage' },
 ];
 function renderDocs() {
   const list = document.getElementById('docList');
@@ -859,25 +859,25 @@ function renderDocs() {
     item.className = 'doc-item';
     item.innerHTML = `<span class="doc-icon">${d.icon}</span>
       <input class="doc-name-input" type="text" value="${escHtml(d.name)}" onchange="docs[${i}].name=this.value"/>
-      <button class="del-btn" onclick="removeDoc(${i})" title="Ta bort">✕</button>`;
+      <button class="del-btn" onclick="removeDoc(${i})" title="Ta bort">â</button>`;
     list.appendChild(item);
   });
 }
 function addDoc() {
-  docs.push({ icon: '📄', name: '' });
+  docs.push({ icon: 'ð', name: '' });
   renderDocs();
   const inputs = document.querySelectorAll('.doc-name-input');
   if (inputs.length) inputs[inputs.length-1].focus();
 }
 function removeDoc(i) { docs.splice(i,1); renderDocs(); }
 
-/* ══════════════════════════════════════════════════════
-   RISKS (steg 4) – med topic-knapp
-══════════════════════════════════════════════════════ */
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+   RISKS (steg 4) â med topic-knapp
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 let risks = [
-  { risk: 'Kontakt med fogmassa',       atgard: 'Handskar och glasögon vid applicering', ansvarig: 'Anders', topicGuid: null },
-  { risk: 'Inandning av lösningsmedel', atgard: 'Ventilera, använd halvmask A2',          ansvarig: 'Arvid',  topicGuid: null },
-  { risk: 'Arbete från stege',          atgard: 'Använd ställning eller arbetsplattform', ansvarig: '',       topicGuid: null },
+  { risk: 'Kontakt med fogmassa',       atgard: 'Handskar och glasÃ¶gon vid applicering', ansvarig: 'Anders', topicGuid: null },
+  { risk: 'Inandning av lÃ¶sningsmedel', atgard: 'Ventilera, anvÃ¤nd halvmask A2',          ansvarig: 'Arvid',  topicGuid: null },
+  { risk: 'Arbete frÃ¥n stege',          atgard: 'AnvÃ¤nd stÃ¤llning eller arbetsplattform', ansvarig: '',       topicGuid: null },
 ];
 
 function renderRisks() {
@@ -886,14 +886,14 @@ function renderRisks() {
   risks.forEach((r, i) => {
     const tr = document.createElement('tr');
     const topicState = r.topicGuid
-      ? `class="topic-btn sent" disabled title="Topic: ${escHtml(r.topicGuid)}">✓ Skapat`
-      : `class="topic-btn" onclick="createTopic(${i},this)" title="Skapa topic i StreamBIM">📌 Topic`;
+      ? `class="topic-btn sent" disabled title="Topic: ${escHtml(r.topicGuid)}">â Skapat`
+      : `class="topic-btn" onclick="createTopic(${i},this)" title="Skapa topic i StreamBIM">ð Topic`;
     tr.innerHTML = `
-      <td><input class="risk-input" type="text" value="${escHtml(r.risk)}"     placeholder="Beskriv risk…"  onchange="risks[${i}].risk=this.value"/></td>
-      <td><input class="risk-input" type="text" value="${escHtml(r.atgard)}"   placeholder="Åtgärd…"        onchange="risks[${i}].atgard=this.value"/></td>
-      <td><input class="risk-input" type="text" value="${escHtml(r.ansvarig)}" placeholder="Namn…"          onchange="risks[${i}].ansvarig=this.value"/></td>
+      <td><input class="risk-input" type="text" value="${escHtml(r.risk)}"     placeholder="Beskriv riskâ¦"  onchange="risks[${i}].risk=this.value"/></td>
+      <td><input class="risk-input" type="text" value="${escHtml(r.atgard)}"   placeholder="ÃtgÃ¤rdâ¦"        onchange="risks[${i}].atgard=this.value"/></td>
+      <td><input class="risk-input" type="text" value="${escHtml(r.ansvarig)}" placeholder="Namnâ¦"          onchange="risks[${i}].ansvarig=this.value"/></td>
       <td><button ${topicState}</button></td>
-      <td><button class="del-btn" onclick="removeRisk(${i})">✕</button></td>`;
+      <td><button class="del-btn" onclick="removeRisk(${i})">â</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -905,12 +905,12 @@ function addRisk() {
 }
 function removeRisk(i) { risks.splice(i,1); renderRisks(); }
 
-/* ══════════════════════════════════════════════════════
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
    SIGNERS (steg 6)
-══════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 let signers = [
   { name: 'Anders Svensson', role: 'Ansvarig', signed: false },
-  { name: 'Arvid Byggare',   role: 'Utförare', signed: false },
+  { name: 'Arvid Byggare',   role: 'UtfÃ¶rare', signed: false },
 ];
 function renderSigners() {
   const tbody = document.getElementById('signBody');
@@ -918,16 +918,16 @@ function renderSigners() {
   signers.forEach((s, i) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input class="sign-input" type="text" value="${escHtml(s.name)}" placeholder="Namn…"  onchange="signers[${i}].name=this.value"/></td>
-      <td><input class="sign-input" type="text" value="${escHtml(s.role)}" placeholder="Roll…"  onchange="signers[${i}].role=this.value" style="color:var(--muted)"/></td>
-      <td><button class="sign-btn ${s.signed?'signed':''}" onclick="signRow(${i},this)">${s.signed?'✓ Signerat':'Signera'}</button></td>
-      <td><button class="del-btn" onclick="removeSigner(${i})">✕</button></td>`;
+      <td><input class="sign-input" type="text" value="${escHtml(s.name)}" placeholder="Namnâ¦"  onchange="signers[${i}].name=this.value"/></td>
+      <td><input class="sign-input" type="text" value="${escHtml(s.role)}" placeholder="Rollâ¦"  onchange="signers[${i}].role=this.value" style="color:var(--muted)"/></td>
+      <td><button class="sign-btn ${s.signed?'signed':''}" onclick="signRow(${i},this)">${s.signed?'â Signerat':'Signera'}</button></td>
+      <td><button class="del-btn" onclick="removeSigner(${i})">â</button></td>`;
     tbody.appendChild(tr);
   });
 }
 function signRow(i, btn) {
   signers[i].signed = true;
-  btn.textContent = '✓ Signerat';
+  btn.textContent = 'â Signerat';
   btn.className = 'sign-btn signed';
   toast('Signering registrerad');
 }
@@ -939,13 +939,13 @@ function addSigner() {
   if (inputs.length) inputs[inputs.length-2].focus();
 }
 
-/* ══════════════════════════════════════════════════════
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
    WIZARD
-══════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 const STEPS     = ['Aktivera','Grunddata','Arbetsmoment','Risker','Resurser','Signering'];
-const BTN_LABEL = ['','Bekräfta och fortsätt →','Bekräfta grunddata och fortsätt →',
-  'Bekräfta arbetsmoment och fortsätt →','Bekräfta risker och fortsätt →',
-  'Bekräfta resurser och fortsätt →','Skapa PDF och spara'];
+const BTN_LABEL = ['','BekrÃ¤fta och fortsÃ¤tt â','BekrÃ¤fta grunddata och fortsÃ¤tt â',
+  'BekrÃ¤fta arbetsmoment och fortsÃ¤tt â','BekrÃ¤fta risker och fortsÃ¤tt â',
+  'BekrÃ¤fta resurser och fortsÃ¤tt â','Skapa PDF och spara'];
 let currentStep = 1;
 
 function buildStepBar() {
@@ -956,7 +956,7 @@ function buildStepBar() {
     const cls = n < currentStep ? 'done' : n === currentStep ? 'active' : '';
     const item = document.createElement('div');
     item.className = 'step-item ' + cls;
-    item.innerHTML = `<div class="step-num">${n < currentStep ? '✓' : n}</div><div class="step-label">${label}</div>`;
+    item.innerHTML = `<div class="step-num">${n < currentStep ? 'â' : n}</div><div class="step-label">${label}</div>`;
     bar.appendChild(item);
     if (i < STEPS.length-1) {
       const c = document.createElement('div');
@@ -977,7 +977,7 @@ function showStep(n) {
 function nextStep() {
   if (currentStep === 6) {
     if (!document.getElementById('ab-confirm').checked) {
-      toast('Bocka i bekräftelsrutan för att slutföra'); return;
+      toast('Bocka i bekrÃ¤ftelsrutan fÃ¶r att slutfÃ¶ra'); return;
     }
     finishAndExport(); return;
   }
@@ -986,13 +986,13 @@ function nextStep() {
 function prevStep() { showStep(--currentStep); }
 
 function finishAndExport() {
-  toast('Skapar PDF och sparar i dokumentmapp…');
-  setTimeout(() => toast('Arbetsberedning sparad ✓'), 2200);
+  toast('Skapar PDF och sparar i dokumentmappâ¦');
+  setTimeout(() => toast('Arbetsberedning sparad â'), 2200);
 }
 
-/* ══════════════════════════════════════════════════════
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
    UTILS
-══════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 function escHtml(s) {
   return String(s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -1008,9 +1008,9 @@ function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-/* ══════════════════════════════════════════════════════
+/* ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
    INIT
-══════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 renderPersons();
 renderDocs();
 renderRisks();
