@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.5.1</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.5.2</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -476,7 +476,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.5.1';
+const VERSION = 'v1.5.2';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -527,21 +527,22 @@ function setConnected() {
 // Hämta projektnamn via REST API
 async function fetchProjectName(pid) {
   if (!pid) return null;
-  // Prova flera endpoint-varianter — makeApiRequest tar bara url+method som strängar
-  const endpoints = [
+  // makeApiRequest(url) — StreamBIM hanterar auth automatiskt
+  const urls = [
     `/pgw/project-${pid}/api/v1/projects/${pid}`,
     `/pgw/project-${pid}/api/v2/projects/${pid}`,
-    `/pgw/project-${pid}/api/v1/project`,
   ];
-  for (const url of endpoints) {
+  for (const url of urls) {
     try {
-      const raw = await API.makeApiRequest(url, 'GET');
+      const raw = await API.makeApiRequest(url);
       const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      dbg('fetchProjectName ok:', url, JSON.stringify(data).substring(0, 80));
+      dbg('fetchProjectName ok:', JSON.stringify(data).substring(0, 80));
       const name = data.name || data.title || data.projectName || (data.project && data.project.name);
       if (name) return name;
     } catch(e) {
-      dbg('fetchProjectName fel:', url, e && (e.message || JSON.stringify(e)));
+      // Penpal kan inte klona XHR-objekt — extrahera vad vi kan
+      const msg = e && (e.message || e.code || e.detail?.message || JSON.stringify(e));
+      dbg('fetchProjectName fel:', url, String(msg).substring(0, 80));
     }
   }
   return null;
@@ -874,29 +875,32 @@ async function createTopic(riskIndex, btn) {
   let topicGuid = null;
 
   if (API && pid !== 'DEMO') {
-    // makeApiRequest(url, method, body, contentType)
+    // StreamBIM makeApiRequest(url) — GET, eller makeApiRequest(url, method, body)
+    // Prova BCF 2.1 endpoint
     const bcfUrl = `/pgw/project-${pid}/api/v1/bcf/2.1/projects/${pid}/topics`;
     const bodyStr = JSON.stringify(body);
-    dbg('createTopic: POST', bcfUrl);
+    dbg('createTopic POST:', bcfUrl);
     try {
-      const raw = await API.makeApiRequest(bcfUrl, 'POST', bodyStr, 'application/json');
+      const raw = await API.makeApiRequest(bcfUrl, 'POST', bodyStr);
       const resp = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      dbg('createTopic resp:', JSON.stringify(resp).substring(0, 100));
-      topicGuid = resp.guid || resp.id || '(skapad)';
+      dbg('createTopic svar:', JSON.stringify(resp).substring(0, 120));
+      topicGuid = resp.guid || resp.id || resp.topic_guid || '(skapad)';
       success = true;
     } catch(e1) {
-      dbg('createTopic bcf fel:', e1 && (e1.message || JSON.stringify(e1)));
-      // Försök 2: pgw REST endpoint
-      const altUrl = `/pgw/project-${pid}/capture/topics`;
-      dbg('createTopic: POST', altUrl);
+      const msg1 = e1 && (e1.message || e1.code || String(e1)).substring(0, 100);
+      dbg('createTopic bcf fel:', msg1);
+      // Försök 2: Rendra capture API
+      const altUrl = `/pgw/project-${pid}/capture/api/v1/topics`;
+      dbg('createTopic POST alt:', altUrl);
       try {
-        const raw2 = await API.makeApiRequest(altUrl, 'POST', JSON.stringify({ title, description }), 'application/json');
+        const raw2 = await API.makeApiRequest(altUrl, 'POST', JSON.stringify({ title, description }));
         const resp2 = typeof raw2 === 'string' ? JSON.parse(raw2) : raw2;
-        dbg('createTopic alt resp:', JSON.stringify(resp2).substring(0, 100));
+        dbg('createTopic alt svar:', JSON.stringify(resp2).substring(0, 120));
         topicGuid = resp2.guid || resp2.id || '(skapad)';
         success = true;
       } catch(e2) {
-        dbg('createTopic alt fel:', e2 && (e2.message || JSON.stringify(e2)));
+        const msg2 = e2 && (e2.message || e2.code || String(e2)).substring(0, 100);
+        dbg('createTopic alt fel:', msg2);
       }
     }
   }
