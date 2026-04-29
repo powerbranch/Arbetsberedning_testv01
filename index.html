@@ -527,20 +527,24 @@ function setConnected() {
 // Hämta projektnamn via REST API
 async function fetchProjectName(pid) {
   if (!pid) return null;
-  try {
-    const raw = await API.makeApiRequest({
-      url: `/project-${pid}/api/v1/v2/projects/${pid}`,
-      method: 'GET',
-      accept: 'application/json',
-    });
-    // makeApiRequest returnerar antingen sträng eller objekt
-    const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    dbg('fetchProjectName data:', JSON.stringify(data).substring(0, 100));
-    return data.name || data.title || data.projectName || (data.project && data.project.name) || null;
-  } catch(e) {
-    dbg('fetchProjectName fel:', e && (e.message || JSON.stringify(e)));
-    return null;
+  // Prova flera endpoint-varianter — makeApiRequest tar bara url+method som strängar
+  const endpoints = [
+    `/pgw/project-${pid}/api/v1/projects/${pid}`,
+    `/pgw/project-${pid}/api/v2/projects/${pid}`,
+    `/pgw/project-${pid}/api/v1/project`,
+  ];
+  for (const url of endpoints) {
+    try {
+      const raw = await API.makeApiRequest(url, 'GET');
+      const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      dbg('fetchProjectName ok:', url, JSON.stringify(data).substring(0, 80));
+      const name = data.name || data.title || data.projectName || (data.project && data.project.name);
+      if (name) return name;
+    } catch(e) {
+      dbg('fetchProjectName fel:', url, e && (e.message || JSON.stringify(e)));
+    }
   }
+  return null;
 }
 
 // Extrahera zon ur IFC-objektets egenskaper
@@ -870,36 +874,29 @@ async function createTopic(riskIndex, btn) {
   let topicGuid = null;
 
   if (API && pid !== 'DEMO') {
-    // Försök med BCF 2.1-endpoint via makeApiRequest
-    const bcfUrl = `/project-${pid}/api/v1/bcf/2.1/projects/${pid}/topics`;
+    // makeApiRequest(url, method, body, contentType)
+    const bcfUrl = `/pgw/project-${pid}/api/v1/bcf/2.1/projects/${pid}/topics`;
+    const bodyStr = JSON.stringify(body);
+    dbg('createTopic: POST', bcfUrl);
     try {
-      const raw = await API.makeApiRequest({
-        url: bcfUrl,
-        method: 'POST',
-        body,
-        contentType: 'application/json',
-        accept: 'application/json',
-      });
-      const resp = typeof raw === "string" ? JSON.parse(raw) : raw;
+      const raw = await API.makeApiRequest(bcfUrl, 'POST', bodyStr, 'application/json');
+      const resp = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      dbg('createTopic resp:', JSON.stringify(resp).substring(0, 100));
       topicGuid = resp.guid || resp.id || '(skapad)';
       success = true;
     } catch(e1) {
-      // Försök 2: alternativt URL-mönster
-      const altUrl = `/project-${pid}/api/v1/topics`;
+      dbg('createTopic bcf fel:', e1 && (e1.message || JSON.stringify(e1)));
+      // Försök 2: pgw REST endpoint
+      const altUrl = `/pgw/project-${pid}/capture/topics`;
+      dbg('createTopic: POST', altUrl);
       try {
-        const raw2 = await API.makeApiRequest({
-          url: altUrl,
-          method: 'POST',
-          body: { title, description, type: 'Issue', status: 'Open' },
-          contentType: 'application/json',
-          accept: 'application/json',
-        });
-        const resp2 = typeof raw2 === "string" ? JSON.parse(raw2) : raw2;
+        const raw2 = await API.makeApiRequest(altUrl, 'POST', JSON.stringify({ title, description }), 'application/json');
+        const resp2 = typeof raw2 === 'string' ? JSON.parse(raw2) : raw2;
+        dbg('createTopic alt resp:', JSON.stringify(resp2).substring(0, 100));
         topicGuid = resp2.guid || resp2.id || '(skapad)';
         success = true;
       } catch(e2) {
-        // Logga för felsökning
-        console.warn('[AB] BCF topic endpoint svarade ej:', e1, e2);
+        dbg('createTopic alt fel:', e2 && (e2.message || JSON.stringify(e2)));
       }
     }
   }
@@ -924,13 +921,14 @@ async function createTopic(riskIndex, btn) {
     btn.classList.remove('loading');
     btn.classList.add('err');
     btn.innerHTML = '✕ Fel';
-    btn.title = 'Kunde inte nå topics-endpoint. Kontakta support@rendra.io för att bekräfta API-URL.';
-    toast('⚠️ Topic endpoint ej nåbar – se konsolen');
+    btn.title = 'API-fel – se debug-panel';
+    dbg('createTopic: MISSLYCKADES – se fel ovan');
+    toast('⚠️ Topic misslyckades – öppna debug-panel för detaljer');
     setTimeout(() => {
       btn.classList.remove('err');
       btn.innerHTML = '📌 Topic';
       btn.title = '';
-    }, 4000);
+    }, 8000);
   }
 }
 
