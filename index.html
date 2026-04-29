@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.3.0</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.4.0</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -476,7 +476,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.3.0';
+const VERSION = 'v1.4.0';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -528,7 +528,7 @@ function setConnected() {
 async function fetchProjectName(pid) {
   if (!StreamBIM || !pid) return null;
   try {
-    const raw = await StreamBIM.makeApiRequest({
+    const raw = await API.makeApiRequest({
       url: `/pgw/project-${pid}/api/v1/project`,
       method: 'GET',
       accept: 'application/json',
@@ -538,7 +538,7 @@ async function fetchProjectName(pid) {
   } catch(e) {
     // Försök alternativt endpoint
     try {
-      const raw2 = await StreamBIM.makeApiRequest({
+      const raw2 = await API.makeApiRequest({
         url: `/pgw/project-${pid}/api/v1/projects/${pid}`,
         method: 'GET',
         accept: 'application/json',
@@ -591,7 +591,7 @@ function extractZone(info) {
     return;
   }
   try {
-    StreamBIM.connect({
+    StreamBIM.connectToParent(window.parent, {
       pickedObject: function(r) {
         dbg('pickedObject:', JSON.stringify(r));
         if (r && r.guid) {
@@ -603,83 +603,27 @@ function extractZone(info) {
         if (state && state.position) cameraPosition = state.position;
       }
     }).then(async function() {
-      API = StreamBIM;
+      API = StreamBIM.API;  // Rätt: StreamBIM.API sätts av connectToParent
       setConnected();
-      dbg('StreamBIM.connect() lyckades!');
+      dbg('StreamBIM.connectToParent() lyckades! API:', typeof API);
 
-      // Dump all available API methods for debugging
+      // Dump alla tillgängliga API-metoder
       try {
-        const allMethods = [];
-        let obj = StreamBIM;
-        while (obj && obj !== Object.prototype) {
-          Object.getOwnPropertyNames(obj).forEach(k => {
-            if (typeof StreamBIM[k] === 'function' && !allMethods.includes(k)) allMethods.push(k);
-          });
-          obj = Object.getPrototypeOf(obj);
-        }
-        dbg('StreamBIM API methods:', allMethods.join(', '));
+        dbg('StreamBIM.API methods:', Object.keys(API).join(', '));
       } catch(e) { dbg('method dump failed:', e); }
 
-      // Hämta projektID — prova flera metoder
+      // Hämta projektID via StreamBIM.API.getProjectId()
       try {
-        // Metod 1: getProjectId()
-        if (typeof StreamBIM.getProjectId === 'function') {
-          projectId = await StreamBIM.getProjectId();
-          dbg('projectId via getProjectId():', projectId);
-        }
-      } catch(e) { dbg('getProjectId() fel:', e.message); }
-
-      if (!projectId) {
-        try {
-          // Metod 2: getProject()
-          if (typeof StreamBIM.getProject === 'function') {
-            const p = await StreamBIM.getProject();
-            projectId = p && (p.id || p.projectId || p.project_id);
-            dbg('projectId via getProject():', projectId, p);
-          }
-        } catch(e) { dbg('getProject() fel:', e.message); }
-      }
-
-      if (!projectId) {
-        try {
-          // Metod 3: getContext() eller getInfo()
-          for (const m of ['getContext','getInfo','getProjectInfo','getCurrentProject']) {
-            if (typeof StreamBIM[m] === 'function') {
-              const r = await StreamBIM[m]();
-              dbg(m + '() result:', JSON.stringify(r));
-              projectId = r && (r.projectId || r.project_id || r.id);
-              if (projectId) break;
-            }
-          }
-        } catch(e) { dbg('getContext/Info fel:', e.message); }
-      }
-
-      if (!projectId) {
-        try {
-          // Metod 4: makeApiRequest mot /pgw/me eller /pgw/projects
-          const raw = await StreamBIM.makeApiRequest({ url: '/pgw/projects', method: 'GET', accept: 'application/json' });
-          const parsed = JSON.parse(raw);
-          dbg('/pgw/projects result:', JSON.stringify(parsed).substring(0, 200));
-          // Hitta rätt projekt från URL
-          const urlMatch = window.location.href.match(/projectId=(\d+)/);
-          if (urlMatch) projectId = parseInt(urlMatch[1]);
-          else if (Array.isArray(parsed) && parsed[0]) projectId = parsed[0].id || parsed[0].projectId;
-        } catch(e) { dbg('makeApiRequest /pgw/projects fel:', e.message); }
-      }
-
-      dbg('slutligt projectId:', projectId);
-
-      if (projectId) {
+        projectId = await API.getProjectId();
+        dbg('projectId:', projectId);
         const projName = await fetchProjectName(projectId).catch(() => null);
         const el = document.getElementById('ab-project');
-        if (el) el.value = projName || ('Projekt ' + projectId);
-        // Ta bort demo-läge-badge nu när vi har ett riktigt projectId
-        setConnected();
-      }
+        if (el && projName) el.value = projName;
+      } catch(e) { dbg('getProjectId() fel:', e.message || e); }
 
       // Hämta initial kameraposition
       try {
-        const s = await StreamBIM.getCameraState();
+        const s = await API.getCameraState();
         if (s && s.position) cameraPosition = s.position;
       } catch(e) {}
 
@@ -706,14 +650,14 @@ async function onObjectPicked(guid, pickedData) {
 
   if (API) {
     try {
-      const info = await StreamBIM.getObjectInfo(guid);
+      const info = await API.getObjectInfo(guid);
       dbg('getObjectInfo:', JSON.stringify(info));
       if (info) {
         name = info.name || info.Name || info.ifcName || name;
         zone = extractZone(info);
       }
     } catch(e) { dbg('getObjectInfo fel:', e); }
-    try { const s = await StreamBIM.getCameraState(); if (s && s.position) cameraPosition = s.position; } catch(e) {}
+    try { const s = await API.getCameraState(); if (s && s.position) cameraPosition = s.position; } catch(e) {}
   } else {
     name = 'Fasadvägg B-vinge';
     zone = 'Zon A (demo)';
@@ -737,9 +681,9 @@ async function onObjectPicked(guid, pickedData) {
 async function highlightSelected() {
   if (!API || !selectedGuid) { toast('Inget objekt valt'); return; }
   try {
-    await StreamBIM.deHighlightAllObjects();
-    await StreamBIM.highlightObject(selectedGuid);
-    await StreamBIM.gotoObject(selectedGuid);
+    await API.deHighlightAllObjects();
+    await API.highlightObject(selectedGuid);
+    await API.gotoObject(selectedGuid);
   } catch(e) { toast('Kunde inte visa objekt'); }
 }
 
@@ -764,7 +708,7 @@ async function confirmScreenshot() {
   try {
     let dataUrl;
     if (API) {
-      dataUrl = await StreamBIM.takeScreenshot();
+      dataUrl = await API.takeScreenshot();
     } else {
       // Demo: generera en grå placeholder
       dataUrl = await makeDemoScreenshot();
@@ -828,7 +772,7 @@ async function captureFloorplan() {
     let dataUrl;
     if (API && cameraPosition) {
       // getAnnotatedFloorplan tar kameraposition och ritar en markering
-      dataUrl = await StreamBIM.getAnnotatedFloorplan(cameraPosition);
+      dataUrl = await API.getAnnotatedFloorplan(cameraPosition);
     } else {
       dataUrl = await makeDemoFloorplan();
     }
@@ -938,7 +882,7 @@ async function createTopic(riskIndex, btn) {
     // Försök med BCF 2.1-endpoint via makeApiRequest
     const bcfUrl = `/pgw/project-${pid}/bcf/2.1/projects/${pid}/topics`;
     try {
-      const raw = await StreamBIM.makeApiRequest({
+      const raw = await API.makeApiRequest({
         url: bcfUrl,
         method: 'POST',
         body,
@@ -952,7 +896,7 @@ async function createTopic(riskIndex, btn) {
       // Försök 2: alternativt URL-mönster
       const altUrl = `/pgw/project-${pid}/api/v1/topics`;
       try {
-        const raw2 = await StreamBIM.makeApiRequest({
+        const raw2 = await API.makeApiRequest({
           url: altUrl,
           method: 'POST',
           body: { title, description, type: 'Issue', status: 'Open' },
