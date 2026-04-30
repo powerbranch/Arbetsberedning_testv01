@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.5.2</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.5.3</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -232,7 +232,15 @@
   <div class="steps-bar" id="stepsBar"></div>
 
   <!-- Debug panel — dold som standard, visas via knapp i steg 1 -->
-  <div id="debugPanel" style="display:none;margin:8px 16px;background:#111;border:1px solid #333;border-radius:6px;padding:10px;font-family:monospace;font-size:10px;color:#7fda7f;max-height:180px;overflow-y:auto;white-space:pre-wrap;word-break:break-all"></div>
+  <div id="debugPanel" style="display:none;margin:8px 16px;background:#111;border:1px solid #333;border-radius:6px;padding:10px;font-family:monospace;font-size:10px;color:#7fda7f;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;border-bottom:1px solid #333;padding-bottom:8px">
+      <button onclick="dbgTestApi()" style="font-size:9px;padding:2px 7px;background:#1a3a1a;border:1px solid #2a6a2a;color:#7fda7f;border-radius:3px;cursor:pointer">🔬 Testa API-metoder</button>
+      <button onclick="dbgTestMakeApiRequest()" style="font-size:9px;padding:2px 7px;background:#1a3a1a;border:1px solid #2a6a2a;color:#7fda7f;border-radius:3px;cursor:pointer">🌐 Testa makeApiRequest</button>
+      <button onclick="dbgTestTopicPost()" style="font-size:9px;padding:2px 7px;background:#1a3a1a;border:1px solid #2a6a2a;color:#7fda7f;border-radius:3px;cursor:pointer">📌 Testa Topic POST</button>
+      <button onclick="_dbgLines.length=0;document.getElementById('debugPanel').textContent=''" style="font-size:9px;padding:2px 7px;background:#3a1a1a;border:1px solid #6a2a2a;color:#da7f7f;border-radius:3px;cursor:pointer">🗑 Rensa</button>
+    </div>
+    <div id="debugLog"></div>
+  </div>
 
   <div class="body" id="body">
 
@@ -476,7 +484,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.5.2';
+const VERSION = 'v1.5.3';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -484,10 +492,10 @@ function dbg(...args) {
   const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
   console.log('[AB]', msg);
   _dbgLines.push(msg);
-  const panel = document.getElementById('debugPanel');
-  if (panel && panel.style.display !== 'none') {
-    panel.textContent = _dbgLines.join('\n');
-    panel.scrollTop = panel.scrollHeight;
+  const log = document.getElementById('debugLog');
+  if (log && document.getElementById('debugPanel').style.display !== 'none') {
+    log.textContent = _dbgLines.join('\n');
+    log.parentElement.scrollTop = log.parentElement.scrollHeight;
   }
 }
 function toggleDebug() {
@@ -496,8 +504,79 @@ function toggleDebug() {
   const visible = panel.style.display !== 'none';
   panel.style.display = visible ? 'none' : 'block';
   if (!visible) {
-    panel.textContent = _dbgLines.length ? _dbgLines.join('\n') : '(inga loggar ännu)';
+    const log = document.getElementById('debugLog');
+    if (log) log.textContent = _dbgLines.length ? _dbgLines.join('\n') : '(inga loggar ännu)';
     panel.scrollTop = panel.scrollHeight;
+  }
+}
+
+// ── API-testfunktioner ───────────────────────────────
+async function dbgTestApi() {
+  dbg('── API METHOD TEST ──');
+  if (!API) { dbg('API är null — inte ansluten'); return; }
+  const methods = [
+    'makeApiRequest','apiRequest','request','fetch','call',
+    'getProjectId','getProject','getUser','getUserEmail','getCurrentUser',
+    'takeScreenshot','getCameraState','getAnnotatedFloorplan',
+    'createTopic','createIssue','addTopic','postTopic',
+    'highlightObject','gotoObject','deHighlightAllObjects',
+  ];
+  for (const m of methods) {
+    dbg(m + ':', typeof API[m]);
+  }
+  // Prova getProjectId
+  try {
+    const pid = await API.getProjectId();
+    dbg('getProjectId() =>', pid);
+  } catch(e) { dbg('getProjectId() ERR:', String(e?.message||e).substring(0,80)); }
+}
+
+async function dbgTestMakeApiRequest() {
+  dbg('── makeApiRequest TEST ──');
+  if (!API) { dbg('API är null'); return; }
+  const pid = projectId || 1125;
+  // Testa 1: bara URL
+  const testUrls = [
+    `/pgw/project-${pid}/api/v1/projects/${pid}`,
+    `/pgw/project-${pid}/api/v2/projects/${pid}`,
+    `/pgw/project-${pid}/api/v1/project`,
+    `/pgw/project-${pid}/capture/api/v1/projects/${pid}`,
+  ];
+  for (const url of testUrls) {
+    try {
+      dbg('GET', url);
+      const raw = await API.makeApiRequest(url);
+      dbg('✓', typeof raw, String(raw).substring(0, 120));
+    } catch(e) {
+      dbg('✗', String(e?.message || e?.code || e).substring(0, 100));
+    }
+  }
+}
+
+async function dbgTestTopicPost() {
+  dbg('── Topic POST TEST ──');
+  if (!API) { dbg('API är null'); return; }
+  const pid = projectId || 1125;
+  const testBody = JSON.stringify({
+    topic_type: 'Issue',
+    topic_status: 'Open',
+    title: '[TEST] Arbetsberedning widget test',
+    description: 'Automatiskt test från widget debug-panel',
+  });
+  const endpoints = [
+    `/pgw/project-${pid}/api/v1/bcf/2.1/projects/${pid}/topics`,
+    `/pgw/project-${pid}/capture/api/v1/topics`,
+    `/pgw/project-${pid}/api/v1/topics`,
+  ];
+  for (const url of endpoints) {
+    try {
+      dbg('POST', url);
+      const raw = await API.makeApiRequest(url, 'POST', testBody);
+      dbg('✓', String(raw).substring(0, 150));
+      break; // Lyckat — stoppa
+    } catch(e) {
+      dbg('✗', String(e?.message || e?.code || e).substring(0, 100));
+    }
   }
 }
 
