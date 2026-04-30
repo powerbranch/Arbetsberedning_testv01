@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.5.5</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.5.6</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -484,7 +484,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.5.5';
+const VERSION = 'v1.5.6';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -554,23 +554,26 @@ async function dbgTestMakeApiRequest() {
 async function dbgTestTopicPost() {
   dbg('── Topic POST TEST ──');
   if (!API) { dbg('API är null'); return; }
-  const pid = projectId || 1125;
-  const endpoints = [
-    [`/project-${pid}/api/v1/bcf/2.1/projects/${pid}/topics`,
-      JSON.stringify({ topic_type:'Issue', topic_status:'Open', title:'[TEST] Arbetsberedning widget', description:'Debug test' })],
-    [`/project-${pid}/capture/api/v1/topics`,
-      JSON.stringify({ title:'[TEST] Arbetsberedning widget', description:'Debug test' })],
-  ];
-  for (const [url, body] of endpoints) {
+  try {
+    dbg('Testar API.createTopic()...');
+    const resp = await API.createTopic({
+      title: '[TEST] Arbetsberedning widget',
+      description: 'Automatiskt test från debug-panel',
+      topic_type: 'Issue',
+      topic_status: 'Open',
+    });
+    dbg('✓ createTopic svar:', JSON.stringify(resp).substring(0, 200));
+  } catch(e) {
+    dbg('✗ createTopic fel:', String(e?.message || e?.code || e).substring(0, 120));
     try {
-      dbg('POST', url);
-      const raw = await API.makeApiRequest(url, 'POST', body);
-      dbg('✓ svar:', String(raw).substring(0, 200));
-      break;
-    } catch(e) {
-      dbg('✗', String(e?.message || e?.code || e).substring(0, 100));
+      dbg('Testar API.addTopic()...');
+      const r2 = await API.addTopic({ title: '[TEST]', description: 'test' });
+      dbg('✓ addTopic svar:', JSON.stringify(r2).substring(0, 200));
+    } catch(e2) {
+      dbg('✗ addTopic fel:', String(e2?.message || e2).substring(0, 100));
     }
   }
+}
 }
 
 let API            = null;
@@ -947,30 +950,21 @@ async function createTopic(riskIndex, btn) {
   let topicGuid = null;
 
   if (API && pid !== 'DEMO') {
-    // Rätt URL-format: /project-{pid}/api/v1/bcf/... (ingen /pgw/-prefix)
-    const bcfUrl = `/project-${pid}/api/v1/bcf/2.1/projects/${pid}/topics`;
-    dbg('createTopic POST:', bcfUrl);
+    dbg('createTopic: anropar API.createTopic()');
     try {
-      const raw = await API.makeApiRequest(bcfUrl, 'POST', JSON.stringify(body));
-      const resp = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      const resp = await API.createTopic({
+        title,
+        description,
+        topic_type: 'Issue',
+        topic_status: 'Open',
+        labels: ['Arbetsberedning', 'Risk'],
+        ...(selectedGuid ? { ifcGuid: selectedGuid } : {}),
+      });
       dbg('createTopic svar:', JSON.stringify(resp).substring(0, 150));
-      topicGuid = resp && (resp.guid || resp.id || resp.topic_guid || '(skapad)');
+      topicGuid = resp && (resp.guid || resp.id || resp.topicGuid || resp.topic_guid || '(skapad)');
       success = true;
     } catch(e) {
-      const msg = String(e?.message || e?.code || e).substring(0, 120);
-      dbg('createTopic bcf fel:', msg);
-      // Försök 2: capture API
-      const altUrl = `/project-${pid}/capture/api/v1/topics`;
-      dbg('createTopic POST alt:', altUrl);
-      try {
-        const raw2 = await API.makeApiRequest(altUrl, 'POST', JSON.stringify({ title, description }));
-        const resp2 = typeof raw2 === 'string' ? JSON.parse(raw2) : raw2;
-        dbg('createTopic alt svar:', JSON.stringify(resp2).substring(0, 150));
-        topicGuid = resp2 && (resp2.guid || resp2.id || '(skapad)');
-        success = true;
-      } catch(e2) {
-        dbg('createTopic alt fel:', String(e2?.message || e2).substring(0, 100));
-      }
+      dbg('createTopic fel:', String(e?.message || e?.code || e).substring(0, 120));
     }
   }
 
