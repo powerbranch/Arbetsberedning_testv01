@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.5.9</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.0</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -484,7 +484,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.5.9';
+const VERSION = 'v1.6.0';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -554,25 +554,30 @@ async function dbgTestMakeApiRequest() {
 async function dbgTestTopicPost() {
   dbg('── Topic POST TEST ──');
   if (!API) { dbg('API är null'); return; }
-  try {
-    dbg('Testar API.createTopic()...');
-    const resp = await API.createTopic({
-      title: '[TEST] Arbetsberedning widget',
-      description: 'Automatiskt test från debug-panel',
-      topic_type: 'Issue',
-      topic_status: 'Open',
-    });
-    dbg('✓ createTopic svar:', JSON.stringify(resp).substring(0, 200));
-  } catch(e) {
-    dbg('✗ createTopic fel:', String(e?.message || e?.code || e).substring(0, 120));
+  const payload = {
+    title: '[TEST] Arbetsberedning widget',
+    description: 'Automatiskt test från debug-panel',
+    topic_type: 'Issue',
+    topic_status: 'Open',
+  };
+  // Prova alla möjliga metoder
+  const methods = ['createTopic', 'addTopic', 'postTopic', 'createIssue', 'call'];
+  for (const m of methods) {
     try {
-      dbg('Testar API.addTopic()...');
-      const r2 = await API.addTopic({ title: '[TEST]', description: 'test' });
-      dbg('✓ addTopic svar:', JSON.stringify(r2).substring(0, 200));
-    } catch(e2) {
-      dbg('✗ addTopic fel:', String(e2?.message || e2).substring(0, 100));
+      dbg(`Testar API.${m}()...`);
+      let resp;
+      if (m === 'call') {
+        resp = await API.call('createTopic', payload);
+      } else {
+        resp = await API[m](payload);
+      }
+      dbg(`✓ ${m} svar:`, JSON.stringify(resp).substring(0, 200));
+      return; // Lyckat — stoppa
+    } catch(e) {
+      dbg(`✗ ${m} fel:`, String(e?.message || e?.code || e).substring(0, 100));
     }
   }
+  dbg('Alla metoder misslyckades — kontakta Rendra för BCF API-dokumentation');
 }
 
 let API            = null;
