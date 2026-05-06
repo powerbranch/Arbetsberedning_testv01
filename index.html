@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.0</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.1</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -484,7 +484,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.6.0';
+const VERSION = 'v1.6.1';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -1153,31 +1153,45 @@ function removeRisk(i) { risks.splice(i,1); renderRisks(); }
    SIGNERS (steg 6)
 ══════════════════════════════════════════════════════ */
 let signers = [
-  { name: 'Anders Svensson', role: 'Ansvarig', signed: false },
-  { name: 'Arvid Byggare',   role: 'Utförare', signed: false },
+  { name: 'Anders Svensson', role: 'Ansvarig', signed: false, signedAt: null, signedBy: null },
+  { name: 'Arvid Byggare',   role: 'Utförare', signed: false, signedAt: null, signedBy: null },
 ];
 function renderSigners() {
   const tbody = document.getElementById('signBody');
   tbody.innerHTML = '';
   signers.forEach((s, i) => {
     const tr = document.createElement('tr');
+    const signCell = s.signed
+      ? `<div style="font-size:10px;color:var(--green);line-height:1.4">
+           <div>✓ <strong>${escHtml(s.signedBy || s.name)}</strong></div>
+           <div style="color:var(--muted)">${escHtml(s.signedAt || '')}</div>
+         </div>`
+      : `<button class="sign-btn" onclick="signRow(${i},this)">Signera</button>`;
     tr.innerHTML = `
       <td><input class="sign-input" type="text" value="${escHtml(s.name)}" placeholder="Namn…"  onchange="signers[${i}].name=this.value"/></td>
       <td><input class="sign-input" type="text" value="${escHtml(s.role)}" placeholder="Roll…"  onchange="signers[${i}].role=this.value" style="color:var(--muted)"/></td>
-      <td><button class="sign-btn ${s.signed?'signed':''}" onclick="signRow(${i},this)">${s.signed?'✓ Signerat':'Signera'}</button></td>
+      <td>${signCell}</td>
       <td><button class="del-btn" onclick="removeSigner(${i})">✕</button></td>`;
     tbody.appendChild(tr);
   });
 }
 function signRow(i, btn) {
-  signers[i].signed = true;
-  btn.textContent = '✓ Signerat';
-  btn.className = 'sign-btn signed';
-  toast('Signering registrerad');
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('sv-SE');
+  const timeStr = now.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+  const signedAt = `${dateStr} ${timeStr}`;
+  const signedBy = signers[i].name || 'Okänd';
+
+  signers[i].signed   = true;
+  signers[i].signedAt = signedAt;
+  signers[i].signedBy = signedBy;
+
+  toast(`✓ Signerat av ${signedBy} — ${signedAt}`);
+  renderSigners();
 }
 function removeSigner(i) { signers.splice(i,1); renderSigners(); }
 function addSigner() {
-  signers.push({ name: '', role: '', signed: false });
+  signers.push({ name: '', role: '', signed: false, signedAt: null, signedBy: null });
   renderSigners();
   const inputs = document.querySelectorAll('#signBody .sign-input');
   if (inputs.length) inputs[inputs.length-2].focus();
@@ -1349,7 +1363,11 @@ async function generatePDF() {
     <tr>
       <td>${escHtml(s.name)}</td>
       <td>${escHtml(s.role)}</td>
-      <td style="color:${s.signed?'#2a7a50':'#888'}">${s.signed ? '✓ Signerat' : 'Ej signerat'}</td>
+      <td style="color:${s.signed?'#2a7a50':'#888'}">
+        ${s.signed
+          ? `✓ <strong>${escHtml(s.signedBy || s.name)}</strong><br/><span style="font-size:9px;color:#666">${escHtml(s.signedAt || '')}</span>`
+          : 'Ej signerat'}
+      </td>
     </tr>`).join('');
 
   const screenshotSection = screenshotDataUrl ? `
