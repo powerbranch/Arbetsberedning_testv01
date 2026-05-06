@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.1</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.2</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -484,7 +484,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.6.1';
+const VERSION = 'v1.6.2';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -582,10 +582,11 @@ async function dbgTestTopicPost() {
 
 let API            = null;
 let selectedGuid   = null;
-let cameraPosition = null;   // sparas vid objektpick för planritning
+let cameraPosition = null;
 let screenshotDataUrl = null;
 let floorplanDataUrl  = null;
 let projectId      = null;
+let currentUserName = null;  // Inloggad användares namn från StreamBIM
 
 /* ══════════════════════════════════════════════════════
    STREAMBIM-ANSLUTNING
@@ -695,6 +696,41 @@ function extractZone(info) {
         const el = document.getElementById('ab-project');
         if (el && projName) el.value = projName;
       } catch(e) { dbg('getProjectId() fel:', e.message || e); }
+
+      // Hämta inloggad användare och fyll i signeraren
+      try {
+        let userName = null;
+        // Prova getUser() — returnerar objekt med name/email
+        for (const method of ['getUser', 'getCurrentUser']) {
+          if (typeof API[method] === 'function') {
+            try {
+              const u = await API[method]();
+              dbg(method + '():', JSON.stringify(u).substring(0, 100));
+              userName = u && (u.name || u.fullName || u.displayName || u.full_name || u.email);
+              if (userName) break;
+            } catch(e) { dbg(method + ' fel:', e.message || e); }
+          }
+        }
+        // Fallback: getUserEmail
+        if (!userName && typeof API.getUserEmail === 'function') {
+          try {
+            userName = await API.getUserEmail();
+            dbg('getUserEmail():', userName);
+          } catch(e) { dbg('getUserEmail fel:', e.message || e); }
+        }
+        if (userName) {
+          dbg('Inloggad användare:', userName);
+          currentUserName = userName;
+          // Sätt namn på den första tomma signeraren (eller lägg till om ingen finns)
+          const emptySigner = signers.find(s => !s.name);
+          if (emptySigner) {
+            emptySigner.name = userName;
+          } else {
+            signers.push({ name: userName, role: 'Deltagare', signed: false, signedAt: null, signedBy: null });
+          }
+          renderSigners();
+        }
+      } catch(e) { dbg('Användarhämtning fel:', e.message || e); }
 
       // Hämta initial kameraposition
       try {
@@ -1180,7 +1216,8 @@ function signRow(i, btn) {
   const dateStr = now.toLocaleDateString('sv-SE');
   const timeStr = now.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
   const signedAt = `${dateStr} ${timeStr}`;
-  const signedBy = signers[i].name || 'Okänd';
+  // Använd inloggat kontonamn om tillgängligt, annars fältets värde
+  const signedBy = currentUserName || signers[i].name || 'Okänd';
 
   signers[i].signed   = true;
   signers[i].signedAt = signedAt;
