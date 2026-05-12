@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.2</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.3</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -484,7 +484,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.6.2';
+const VERSION = 'v1.6.3';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -554,30 +554,29 @@ async function dbgTestMakeApiRequest() {
 async function dbgTestTopicPost() {
   dbg('── Topic POST TEST ──');
   if (!API) { dbg('API är null'); return; }
-  const payload = {
-    title: '[TEST] Arbetsberedning widget',
-    description: 'Automatiskt test från debug-panel',
-    topic_type: 'Issue',
-    topic_status: 'Open',
-  };
-  // Prova alla möjliga metoder
-  const methods = ['createTopic', 'addTopic', 'postTopic', 'createIssue', 'call'];
-  for (const m of methods) {
+  dbg('bcfProjectUuid:', bcfProjectUuid);
+  if (!bcfProjectUuid) {
+    dbg('Inget BCF UUID — försöker hämta...');
     try {
-      dbg(`Testar API.${m}()...`);
-      let resp;
-      if (m === 'call') {
-        resp = await API.call('createTopic', payload);
-      } else {
-        resp = await API[m](payload);
+      const raw = await API.makeApiRequest('/bcf/2.1/projects');
+      const list = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      dbg('BCF projects:', JSON.stringify(list).substring(0, 300));
+      if (Array.isArray(list) && list[0]) {
+        bcfProjectUuid = list[0].project_id || list[0].id;
+        dbg('Satt bcfProjectUuid:', bcfProjectUuid);
       }
-      dbg(`✓ ${m} svar:`, JSON.stringify(resp).substring(0, 200));
-      return; // Lyckat — stoppa
-    } catch(e) {
-      dbg(`✗ ${m} fel:`, String(e?.message || e?.code || e).substring(0, 100));
-    }
+    } catch(e) { dbg('BCF projects fel:', String(e?.message || e).substring(0, 100)); return; }
   }
-  dbg('Alla metoder misslyckades — kontakta Rendra för BCF API-dokumentation');
+  if (!bcfProjectUuid) { dbg('Kunde ej hämta BCF UUID'); return; }
+  const url = `/bcf/2.1/projects/${bcfProjectUuid}/topics`;
+  const body = JSON.stringify({ title: '[TEST] Arbetsberedning widget', description: 'Debug test', topic_type: 'Issue', topic_status: 'open' });
+  try {
+    dbg('POST', url);
+    const raw = await API.makeApiRequest(url, 'POST', body);
+    dbg('✓ svar:', String(raw).substring(0, 200));
+  } catch(e) {
+    dbg('✗ fel:', String(e?.message || e?.code || e).substring(0, 150));
+  }
 }
 
 let API            = null;
@@ -586,6 +585,7 @@ let cameraPosition = null;
 let screenshotDataUrl = null;
 let floorplanDataUrl  = null;
 let projectId      = null;
+let bcfProjectUuid = null;   // BCF UUID för topics (hämtas via GET /bcf/2.1/projects)
 let currentUserName = null;  // Inloggad användares namn från StreamBIM
 
 /* ══════════════════════════════════════════════════════
@@ -697,40 +697,54 @@ function extractZone(info) {
         if (el && projName) el.value = projName;
       } catch(e) { dbg('getProjectId() fel:', e.message || e); }
 
-      // Hämta inloggad användare och fyll i signeraren
+      // Hämta BCF project UUID (krävs för POST /bcf/2.1/projects/{UUID}/topics)
       try {
-        let userName = null;
-        // Prova getUser() — returnerar objekt med name/email
-        for (const method of ['getUser', 'getCurrentUser']) {
-          if (typeof API[method] === 'function') {
+        const bcfRaw = await API.makeApiRequest('/bcf/2.1/projects');
+        const bcfList = typeof bcfRaw === 'string' ? JSON.parse(bcfRaw) : bcfRaw;
+        dbg('BCF projects:', JSON.stringify(bcfList).substring(0, 200));
+        if (Array.isArray(bcfList) && bcfList.length > 0) {
+          const match = bcfList.find(p => String(p.project_id) === String(projectId) || String(p.id) === String(projectId));
+          bcfProjectUuid = (match || bcfList[0]).project_id || (match || bcfList[0]).id;
+          dbg('bcfProjectUuid:', bcfProjectUuid);
+        }
+      } catch(e) { dbg('BCF projects fel:', e.message || e); }
+
+      // Hämta inloggad användare via /mgw/api/v3/users
+      try {
+        const userRaw = await API.makeApiRequest('/mgw/api/v3/users?filter[self]=true');
+        const userData = typeof userRaw === 'string' ? JSON.parse(userRaw) : userRaw;
+        dbg('users API:', JSON.stringify(userData).substring(0, 200));
+        const u = Array.isArray(userData?.data) ? userData.data[0] : (userData?.data || userData);
+        if (u) {
+          const attrs = u.attributes || u;
+          currentUserName = attrs.name
+            || ((attrs['first-name'] || '') + ' ' + (attrs['last-name'] || '')).trim()
+            || u.id || null;
+          dbg('Inloggad användare:', currentUserName);
+        }
+      } catch(e) {
+        dbg('users API fel:', e.message || e);
+        // Fallback: prova Penpal-metoder
+        for (const m of ['getUser', 'getCurrentUser']) {
+          if (typeof API[m] === 'function') {
             try {
-              const u = await API[method]();
-              dbg(method + '():', JSON.stringify(u).substring(0, 100));
-              userName = u && (u.name || u.fullName || u.displayName || u.full_name || u.email);
-              if (userName) break;
-            } catch(e) { dbg(method + ' fel:', e.message || e); }
+              const u = await API[m]();
+              currentUserName = u && (u.name || u.fullName || u.displayName || u.full_name || u.email);
+              if (currentUserName) { dbg(m + '():', currentUserName); break; }
+            } catch(e2) { dbg(m + ' fel:', e2.message || e2); }
           }
         }
-        // Fallback: getUserEmail
-        if (!userName && typeof API.getUserEmail === 'function') {
-          try {
-            userName = await API.getUserEmail();
-            dbg('getUserEmail():', userName);
-          } catch(e) { dbg('getUserEmail fel:', e.message || e); }
+      }
+
+      if (currentUserName) {
+        const emptySigner = signers.find(s => !s.name);
+        if (emptySigner) {
+          emptySigner.name = currentUserName;
+        } else {
+          signers.push({ name: currentUserName, role: 'Deltagare', signed: false, signedAt: null, signedBy: null });
         }
-        if (userName) {
-          dbg('Inloggad användare:', userName);
-          currentUserName = userName;
-          // Sätt namn på den första tomma signeraren (eller lägg till om ingen finns)
-          const emptySigner = signers.find(s => !s.name);
-          if (emptySigner) {
-            emptySigner.name = userName;
-          } else {
-            signers.push({ name: userName, role: 'Deltagare', signed: false, signedAt: null, signedBy: null });
-          }
-          renderSigners();
-        }
-      } catch(e) { dbg('Användarhämtning fel:', e.message || e); }
+        renderSigners();
+      }
 
       // Hämta initial kameraposition
       try {
@@ -1002,21 +1016,28 @@ async function createTopic(riskIndex, btn) {
   let topicGuid = null;
 
   if (API && pid !== 'DEMO') {
-    dbg('createTopic: anropar API.createTopic()');
-    try {
-      const resp = await API.createTopic({
+    const uuid = bcfProjectUuid;
+    if (!uuid) {
+      dbg('createTopic: saknar bcfProjectUuid — kan ej skapa topic');
+    } else {
+      const bcfUrl = `/bcf/2.1/projects/${uuid}/topics`;
+      const bodyStr = JSON.stringify({
         title,
         description,
         topic_type: 'Issue',
-        topic_status: 'Open',
-        labels: ['Arbetsberedning', 'Risk'],
-        ...(selectedGuid ? { ifcGuid: selectedGuid } : {}),
+        topic_status: 'open',
+        labels: ['Arbetsberedning'],
       });
-      dbg('createTopic svar:', JSON.stringify(resp).substring(0, 150));
-      topicGuid = resp && (resp.guid || resp.id || resp.topicGuid || resp.topic_guid || '(skapad)');
-      success = true;
-    } catch(e) {
-      dbg('createTopic fel:', String(e?.message || e?.code || e).substring(0, 120));
+      dbg('createTopic POST:', bcfUrl);
+      try {
+        const raw = await API.makeApiRequest(bcfUrl, 'POST', bodyStr);
+        const resp = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        dbg('createTopic svar:', JSON.stringify(resp).substring(0, 150));
+        topicGuid = resp && (resp.guid || resp.id || resp.topic_guid || '(skapad)');
+        success = true;
+      } catch(e) {
+        dbg('createTopic fel:', String(e?.message || e?.code || e).substring(0, 120));
+      }
     }
   }
 
