@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.4</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.5</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -484,7 +484,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.6.4';
+const VERSION = 'v1.6.5';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -515,20 +515,29 @@ async function dbgTestApi() {
   dbg('── API METHOD TEST ──');
   if (!API) { dbg('API är null — inte ansluten'); return; }
   const methods = [
-    'makeApiRequest','apiRequest','request','fetch','call',
-    'getProjectId','getProject','getUser','getUserEmail','getCurrentUser',
+    'makeApiRequest','call','getProjectId','getProject',
+    'getUser','getUserEmail','getCurrentUser',
     'takeScreenshot','getCameraState','getAnnotatedFloorplan',
     'createTopic','createIssue','addTopic','postTopic',
     'highlightObject','gotoObject','deHighlightAllObjects',
   ];
-  for (const m of methods) {
-    dbg(m + ':', typeof API[m]);
-  }
-  // Prova getProjectId
-  try {
-    const pid = await API.getProjectId();
-    dbg('getProjectId() =>', pid);
-  } catch(e) { dbg('getProjectId() ERR:', String(e?.message||e).substring(0,80)); }
+  methods.forEach(m => dbg(m + ':', typeof API[m]));
+
+  // Testa getProjectId
+  try { const pid = await API.getProjectId(); dbg('getProjectId() =>', pid); }
+  catch(e) { dbg('getProjectId() ERR:', String(e?.message||e).substring(0,80)); }
+
+  // Testa getUserEmail
+  try { const email = await API.getUserEmail(); dbg('getUserEmail() =>', email); }
+  catch(e) { dbg('getUserEmail() ERR:', String(e?.message||e).substring(0,80)); }
+
+  // Testa getUser
+  try { const u = await API.getUser(); dbg('getUser() =>', JSON.stringify(u).substring(0,100)); }
+  catch(e) { dbg('getUser() ERR:', String(e?.message||e).substring(0,80)); }
+
+  // Testa call('getUserEmail')
+  try { const r = await API.call('getUserEmail'); dbg('call(getUserEmail) =>', JSON.stringify(r).substring(0,100)); }
+  catch(e) { dbg('call(getUserEmail) ERR:', String(e?.message||e).substring(0,80)); }
 }
 
 async function dbgTestMakeApiRequest() {
