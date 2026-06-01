@@ -222,7 +222,7 @@
     <div class="header-left">
       <div class="ncc-badge">NCC</div>
       <div class="header-title">Arbetsberedning</div>
-      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.5</div>
+      <div style="font-size:9px;color:var(--muted);margin-left:4px;align-self:flex-end;padding-bottom:1px">v1.6.6</div>
     </div>
     <div id="connBadge" class="conn-pill">
       <div class="cdot pulse"></div><span>Ansluter…</span>
@@ -484,7 +484,7 @@
 /* ══════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════ */
-const VERSION = 'v1.6.5';
+const VERSION = 'v1.6.6';
 
 // ── Debug-loggning ──────────────────────────────────────────────
 const _dbgLines = [];
@@ -554,13 +554,9 @@ async function dbgTestMakeApiRequest() {
   for (const url of testUrls) {
     try {
       dbg('GET', url);
-      const raw = await API.makeApiRequest(url);
-      dbg('✓', typeof raw, String(raw).substring(0, 150));
-    } catch(e) {
-      // Extrahera meningsfull info från Penpal-fel
-      const msg = e?.message || e?.code || (typeof e === 'object' ? JSON.stringify(Object.keys(e||{})) : String(e));
-      dbg('✗', String(msg).substring(0, 120));
-    }
+      const r = await apiRequest(url);
+      if (r.ok) { dbg('✓', JSON.stringify(r.data).substring(0, 200)); }
+      else { dbg('✗', r.error); }
   }
 }
 
@@ -570,26 +566,24 @@ async function dbgTestTopicPost() {
   dbg('bcfProjectUuid:', bcfProjectUuid);
   if (!bcfProjectUuid) {
     dbg('Inget BCF UUID — försöker hämta...');
-    try {
-      const raw = await API.makeApiRequest('/bcf/2.1/projects');
-      const list = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const bcfFetch = await apiRequest('/bcf/2.1/projects');
+    if (bcfFetch.ok) {
+      const list = Array.isArray(bcfFetch.data) ? bcfFetch.data : (bcfFetch.data?.projects || []);
       dbg('BCF projects:', JSON.stringify(list).substring(0, 300));
-      if (Array.isArray(list) && list[0]) {
+      if (list.length > 0) {
         bcfProjectUuid = list[0].project_id || list[0].id;
         dbg('Satt bcfProjectUuid:', bcfProjectUuid);
       }
-    } catch(e) { dbg('BCF projects fel:', String(e?.message || e).substring(0, 100)); return; }
+    } else { dbg('BCF projects fel:', bcfFetch.error); return; }
   }
   if (!bcfProjectUuid) { dbg('Kunde ej hämta BCF UUID'); return; }
   const url = `/bcf/2.1/projects/${bcfProjectUuid}/topics`;
   const body = JSON.stringify({ title: '[TEST] Arbetsberedning widget', description: 'Debug test', topic_type: 'Issue', topic_status: 'open' });
   try {
     dbg('POST', url);
-    const raw = await API.makeApiRequest(url, 'POST', body);
-    dbg('✓ svar:', String(raw).substring(0, 200));
-  } catch(e) {
-    dbg('✗ fel:', String(e?.message || e?.code || e).substring(0, 150));
-  }
+    const r = await apiRequest(url, 'POST', body);
+    if (r.ok) { dbg('✓ svar:', JSON.stringify(r.data).substring(0, 200)); }
+    else { dbg('✗ fel:', r.error); }
 }
 
 let API            = null;
@@ -617,27 +611,35 @@ function setConnected() {
   dbg('StreamBIM ansluten');
 }
 
-// Hämta projektnamn via REST API
+// Hjälpfunktion: anropa makeApiRequest och hantera Penpal XHR-serialiseringsfel
+async function apiRequest(url, method, body) {
+  if (!API) return { ok: false, error: 'API är null' };
+  try {
+    const raw = method && method !== 'GET'
+      ? await API.makeApiRequest(url, method, body)
+      : await API.makeApiRequest(url);
+    let data;
+    try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; }
+    catch(pe) { data = raw; }
+    return { ok: true, data };
+  } catch(e) {
+    const msg = e?.message || e?.statusCode || e?.status || e?.code
+      || (e instanceof Error ? e.message : null)
+      || (typeof e === 'object' ? JSON.stringify(Object.keys(e || {})) : String(e));
+    return { ok: false, error: String(msg).substring(0, 200) };
+  }
+}
+
+// Hämta projektnamn via Swagger-korrekt endpoint: /mgw/api/v3/projects/{id}
 async function fetchProjectName(pid) {
   if (!pid) return null;
-  // makeApiRequest(url) — StreamBIM hanterar auth automatiskt
-  const urls = [
-    `/project-${pid}/api/v1/v2/projects/${pid}`,
-    `/project-${pid}/api/v2/projects/${pid}`,
-  ];
-  for (const url of urls) {
-    try {
-      const raw = await API.makeApiRequest(url);
-      const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      dbg('fetchProjectName ok:', JSON.stringify(data).substring(0, 80));
-      const name = data.name || data.title || data.projectName || (data.project && data.project.name);
-      if (name) return name;
-    } catch(e) {
-      // Penpal kan inte klona XHR-objekt — extrahera vad vi kan
-      const msg = e && (e.message || e.code || e.detail?.message || JSON.stringify(e));
-      dbg('fetchProjectName fel:', url, String(msg).substring(0, 80));
-    }
+  const r = await apiRequest(`/mgw/api/v3/projects/${pid}`);
+  if (r.ok) {
+    const d = r.data?.data?.attributes || r.data?.data || r.data;
+    dbg('fetchProjectName ok:', JSON.stringify(d).substring(0, 80));
+    return d?.name || d?.title || null;
   }
+  dbg('fetchProjectName fel:', r.error);
   return null;
 }
 
@@ -711,23 +713,26 @@ function extractZone(info) {
       } catch(e) { dbg('getProjectId() fel:', e.message || e); }
 
       // Hämta BCF project UUID (krävs för POST /bcf/2.1/projects/{UUID}/topics)
-      try {
-        const bcfRaw = await API.makeApiRequest('/bcf/2.1/projects');
-        const bcfList = typeof bcfRaw === 'string' ? JSON.parse(bcfRaw) : bcfRaw;
-        dbg('BCF projects:', JSON.stringify(bcfList).substring(0, 200));
-        if (Array.isArray(bcfList) && bcfList.length > 0) {
+      const bcfR = await apiRequest('/bcf/2.1/projects');
+      if (bcfR.ok) {
+        const bcfList = Array.isArray(bcfR.data) ? bcfR.data : (bcfR.data?.projects || []);
+        dbg('BCF projects:', JSON.stringify(bcfList).substring(0, 300));
+        if (bcfList.length > 0) {
           const match = bcfList.find(p => String(p.project_id) === String(projectId) || String(p.id) === String(projectId));
           bcfProjectUuid = (match || bcfList[0]).project_id || (match || bcfList[0]).id;
           dbg('bcfProjectUuid:', bcfProjectUuid);
+        } else {
+          dbg('BCF projects: tom lista — BCF ej aktiverat?');
         }
-      } catch(e) { dbg('BCF projects fel:', e.message || e); }
+      } else {
+        dbg('BCF projects fel:', bcfR.error);
+      }
 
-      // Hämta inloggad användare via /mgw/api/v3/users
-      try {
-        const userRaw = await API.makeApiRequest('/mgw/api/v3/users?filter[self]=true');
-        const userData = typeof userRaw === 'string' ? JSON.parse(userRaw) : userRaw;
-        dbg('users API:', JSON.stringify(userData).substring(0, 200));
-        const u = Array.isArray(userData?.data) ? userData.data[0] : (userData?.data || userData);
+      // Hämta inloggad användare via /mgw/api/v3/users?filter[self]=true
+      const userR = await apiRequest('/mgw/api/v3/users?filter[self]=true');
+      if (userR.ok) {
+        dbg('users API:', JSON.stringify(userR.data).substring(0, 200));
+        const u = Array.isArray(userR.data?.data) ? userR.data.data[0] : (userR.data?.data || userR.data);
         if (u) {
           const attrs = u.attributes || u;
           currentUserName = attrs.name
@@ -735,8 +740,8 @@ function extractZone(info) {
             || u.id || null;
           dbg('Inloggad användare:', currentUserName);
         }
-      } catch(e) {
-        dbg('users API fel:', e.message || e);
+      } else {
+        dbg('users API fel:', userR.error);
         // Fallback: prova Penpal-metoder
         for (const m of ['getUser', 'getCurrentUser']) {
           if (typeof API[m] === 'function') {
@@ -1043,14 +1048,14 @@ async function createTopic(riskIndex, btn) {
       });
       dbg('createTopic POST:', bcfUrl);
       try {
-        const raw = await API.makeApiRequest(bcfUrl, 'POST', bodyStr);
-        const resp = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        dbg('createTopic svar:', JSON.stringify(resp).substring(0, 150));
-        topicGuid = resp && (resp.guid || resp.id || resp.topic_guid || '(skapad)');
-        success = true;
-      } catch(e) {
-        dbg('createTopic fel:', String(e?.message || e?.code || e).substring(0, 120));
-      }
+        const cr = await apiRequest(bcfUrl, 'POST', bodyStr);
+        if (cr.ok) {
+          dbg('createTopic svar:', JSON.stringify(cr.data).substring(0, 150));
+          topicGuid = cr.data && (cr.data.guid || cr.data.id || cr.data.topic_guid || '(skapad)');
+          success = true;
+        } else {
+          dbg('createTopic fel:', cr.error);
+        }
     }
   }
 
